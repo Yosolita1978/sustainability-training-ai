@@ -4,9 +4,21 @@ services:
     env: python
     runtime: python-3.11
     plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: panel serve app.py --port=$PORT --allow-websocket-origin=*
+    buildCommand: |
+      echo "🔧 Installing dependencies..."
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      echo "✅ Dependencies installed"
+    startCommand: |
+      echo "🚀 Starting Panel application..."
+      panel serve app.py --port=$PORT --allow-websocket-origin=*
     healthCheckPath: /
+    # Extended timeouts for health checks
+    healthCheckDelay: 30
+    healthCheckPeriod: 10
+    healthCheckTimeout: 10
+    healthCheckFailureThreshold: 5
+    # Environment variables
     envVars:
       - key: OPENAI_API_KEY
         sync: false
@@ -18,9 +30,15 @@ services:
         value: "/opt/render/project/repo/src"
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: PANEL_DEV
+        value: "false"
+      - key: PANEL_AUTORELOAD
+        value: "false"
+    # Resource scaling
     scaling:
       minInstances: 1
       maxInstances: 3
+    # Persistent storage for temporary files
     disk:
       name: sustainability-data
       mountPath: /tmp
