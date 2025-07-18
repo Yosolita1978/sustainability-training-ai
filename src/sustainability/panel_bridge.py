@@ -28,10 +28,9 @@ class SustainabilityPanelApp(param.Parameterized):
         # Web environment detection
         self.is_web_env = self.is_web_environment()
         
-        # Configure Panel for deployment environment
+        # Configure Panel for deployment environment - removed deprecated config
         if self.is_web_env:
             pn.config.autoreload = False
-            pn.config.dev = False
         else:
             pn.config.autoreload = True
         
