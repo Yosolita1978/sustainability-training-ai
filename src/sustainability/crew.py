@@ -1,6 +1,6 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import SerperDevTool  # Fixed missing import
+from .tools.custom_serper import CustomSerperTool  # Add this
 from pydantic import BaseModel, Field
 from typing import List
 import os
@@ -106,7 +106,7 @@ class Sustainability():
         self.user_preferences = self._load_user_preferences()
         self._ensure_output_directory()
         # Initialize CrewAI search tool
-        self.search_tool = SerperDevTool()
+        self.search_tool = CustomSerperTool()
         
     def _load_user_preferences(self):
         """Load user preferences from knowledge folder"""

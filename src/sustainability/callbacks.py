@@ -79,12 +79,22 @@ class PanelCallbackHandler:
         self.send_message(message, user=agent_name, message_type="agent_thinking")
     
     def on_tool_use(self, agent_name: str, tool_name: str, tool_input: str, tool_output: str):
-        """Called when an agent uses a tool"""
-        if tool_name == "SerperDevTool":
+        """Called when an agent uses a tool - Updated for custom search tool"""
+        # Handle our custom SerperDevTool
+        if tool_name in ["SerperDevTool", "CustomSerperTool"]:
             # Format search results nicely
             clean_input = tool_input[:100] + "..." if len(tool_input) > 100 else tool_input
-            clean_output = tool_output[:300] + "..." if len(tool_output) > 300 else tool_output
-            message = f"🔍 Searching for: {clean_input}\n📋 Found relevant information about sustainability regulations and best practices"
+            
+            # Check if we got results
+            if "Search Results" in tool_output or "=== " in tool_output:
+                # Count results for better feedback
+                result_count = tool_output.count("**") // 2  # Approximate result count
+                message = f"🔍 Searching for: {clean_input}\n📋 Found {result_count} relevant sources about sustainability regulations and market trends"
+            elif "Error:" in tool_output:
+                message = f"🔍 Search attempted: {clean_input}\n⚠️ Search encountered an issue, using fallback information"
+            else:
+                message = f"🔍 Researching: {clean_input}\n📋 Gathering current market information and regulatory updates"
+            
             self.send_message(message, user=agent_name, message_type="search")
         else:
             # Other tools
