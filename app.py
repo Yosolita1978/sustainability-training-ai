@@ -149,17 +149,18 @@ if __name__ == "__main__":
     PORT = int(os.environ.get('PORT', 5007))
     HOST = '0.0.0.0'
     
-    print(f"\n🧪 Development mode - starting server...")
-    print(f"🔗 Open: http://localhost:{PORT}")
+    print(f"\n🚀 Production mode - starting server...")
+    print(f"🔗 Server will be available on port {PORT}")
     
     try:
         # Start the Panel server
-        app_instance.show(
+        pn.serve(
+            app_instance,
             port=PORT,
             host=HOST,
-            show=False,  # Don't try to open browser in production
+            show=False,
             allow_websocket_origin=["*"],
-            autoreload=False  # Disable autoreload in production
+            autoreload=False
         )
     except Exception as e:
         print(f"❌ Server failed to start: {e}")
