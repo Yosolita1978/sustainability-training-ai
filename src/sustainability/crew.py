@@ -1,5 +1,6 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
+from crewai_tools import SerperDevTool  # Fixed missing import
 from pydantic import BaseModel, Field
 from typing import List
 import os
@@ -110,12 +111,34 @@ class Sustainability():
     def _load_user_preferences(self):
         """Load user preferences from knowledge folder"""
         try:
-            # Read file directly instead of using FileReadTool
-            with open('knowledge/user_preference.txt', 'r') as file:
-                return file.read()
-        except FileNotFoundError:
-            # Return default user preferences if file not found
-            return """USER_PROFILE:
+            # Use absolute path for web deployment
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(current_dir))
+            preferences_path = os.path.join(project_root, 'knowledge', 'user_preference.txt')
+            
+            # Try multiple possible paths for different deployment scenarios
+            possible_paths = [
+                preferences_path,
+                os.path.join(current_dir, '..', '..', 'knowledge', 'user_preference.txt'),
+                'knowledge/user_preference.txt'
+            ]
+            
+            for path in possible_paths:
+                if os.path.exists(path):
+                    with open(path, 'r', encoding='utf-8') as file:
+                        return file.read()
+            
+            # If no file found, return default
+            print("⚠️ Warning: user_preference.txt not found, using defaults")
+            return self._get_default_preferences()
+            
+        except Exception as e:
+            print(f"⚠️ Warning: Error loading user preferences: {e}")
+            return self._get_default_preferences()
+    
+    def _get_default_preferences(self):
+        """Return default user preferences"""
+        return """USER_PROFILE:
 Name: Marketing Professional
 Role: Marketing Director
 Company_Type: Marketing/Communications Agency
@@ -131,8 +154,11 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
     
     def _ensure_output_directory(self):
         """Create outputs directory if it doesn't exist"""
-        if not os.path.exists('outputs'):
-            os.makedirs('outputs')
+        try:
+            if not os.path.exists('outputs'):
+                os.makedirs('outputs')
+        except Exception as e:
+            print(f"⚠️ Warning: Could not create outputs directory: {e}")
     
     @agent
     def scenario_builder(self) -> Agent:
@@ -204,11 +230,19 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
     
     @task
     def assessment_and_feedback_task(self) -> Task:
+        # Make output file optional for web deployment
+        output_file = None
+        try:
+            if os.path.exists('outputs') or os.makedirs('outputs', exist_ok=True):
+                output_file = 'outputs/sustainability_training_session.json'
+        except:
+            pass  # Skip file output if not possible in web environment
+        
         return Task(
             config=self.tasks_config['assessment_and_feedback_task'],
             agent=self.assessment_agent(),
             output_pydantic=ComprehensiveTrainingReport,
-            output_file='outputs/sustainability_training_session.json',
+            output_file=output_file,
             callback=print_task_output
         )
     
@@ -221,5 +255,5 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
             process=Process.sequential,
             verbose=True,
             memory=False,  # Disabled to avoid ChromaDB warnings for MVP
-            output_log_file="outputs/training_session.log"
+            output_log_file=None  # Disable file logging for web deployment
         )

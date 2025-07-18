@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Complete Panel Bridge for Sustainability Training Application
+Complete Panel Bridge for Sustainability Training Application - Web Optimized
 """
 
 import panel as pn
@@ -8,11 +8,11 @@ import param
 import asyncio
 import threading
 import traceback
-import urllib.parse
+import base64
+import json
 from datetime import datetime
 from typing import Optional, Dict, Any
 import os
-import json
 
 # Minimal Panel configuration for web deployment
 pn.extension()
@@ -28,7 +28,7 @@ class SustainabilityPanelApp(param.Parameterized):
         # Web environment detection
         self.is_web_env = self.is_web_environment()
         
-        # Configure Panel for deployment environment - removed deprecated config
+        # Configure Panel for deployment environment
         if self.is_web_env:
             pn.config.autoreload = False
         else:
@@ -65,8 +65,6 @@ class SustainabilityPanelApp(param.Parameterized):
             placeholder_text="Training messages will appear here...",
             visible=False  # Hide initially
         )
-        
-        # Don't send welcome message initially
     
     def setup_controls(self):
         """Initialize control widgets"""
@@ -365,7 +363,7 @@ class SustainabilityPanelApp(param.Parameterized):
             self.chat_interface.send("✅ Training completed! Use the download buttons to access your results.", user="System", respond=False)
     
     def download_markdown_report(self, event):
-        """Download the training report as markdown - Web optimized"""
+        """Download the training report as markdown - Web optimized with better encoding"""
         if not self.latest_results:
             self.chat_interface.send("No results available for download.", user="System", respond=False)
             return
@@ -382,46 +380,81 @@ class SustainabilityPanelApp(param.Parameterized):
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = f"sustainability_training_report_{timestamp}.md"
                     
-                    # Web-only download using JavaScript
-                    encoded_content = urllib.parse.quote(markdown_content)
-                    
-                    download_html = f"""
-                    <div style="margin: 20px 0; padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f8f9fa; text-align: center;">
-                        <h3 style="color: #28a745; margin-bottom: 15px;">📄 Training Report Ready!</h3>
-                        <p style="margin-bottom: 20px;">Click the button below to download your comprehensive sustainability training report.</p>
-                        <button onclick="downloadReport()" 
-                                style="background-color: #28a745; color: white; padding: 15px 30px; 
-                                       border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;
-                                       box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.3s;">
-                            📄 Download {filename}
-                        </button>
-                        <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                            File size: ~{len(markdown_content):,} characters | Format: Markdown (.md)
-                        </p>
-                    </div>
-                    <script>
-                    function downloadReport() {{
-                        try {{
-                            const content = decodeURIComponent(`{encoded_content}`);
-                            const blob = new Blob([content], {{ type: 'text/markdown;charset=utf-8' }});
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = '{filename}';
-                            link.style.display = 'none';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(url);
-                            
-                            alert('✅ Download started! Check your Downloads folder for {filename}');
-                        }} catch (error) {{
-                            console.error('Download error:', error);
-                            alert('❌ Download failed. Please try again or contact support.');
+                    # Safer encoding approach for web deployment
+                    try:
+                        # Encode content as base64 to avoid URL encoding issues
+                        content_bytes = markdown_content.encode('utf-8')
+                        content_b64 = base64.b64encode(content_bytes).decode('ascii')
+                        
+                        download_html = f"""
+                        <div style="margin: 20px 0; padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f8f9fa; text-align: center;">
+                            <h3 style="color: #28a745; margin-bottom: 15px;">📄 Training Report Ready!</h3>
+                            <p style="margin-bottom: 20px;">Click the button below to download your comprehensive sustainability training report.</p>
+                            <button onclick="downloadReportSafe()" 
+                                    style="background-color: #28a745; color: white; padding: 15px 30px; 
+                                           border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;
+                                           box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.3s;">
+                                📄 Download {filename}
+                            </button>
+                            <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                                File size: ~{len(markdown_content):,} characters | Format: Markdown (.md)
+                            </p>
+                        </div>
+                        <script>
+                        function downloadReportSafe() {{
+                            try {{
+                                // Decode from base64
+                                const contentB64 = '{content_b64}';
+                                const contentBytes = Uint8Array.from(atob(contentB64), c => c.charCodeAt(0));
+                                const blob = new Blob([contentBytes], {{ type: 'text/markdown;charset=utf-8' }});
+                                
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = '{filename}';
+                                link.style.display = 'none';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(url);
+                                
+                                console.log('✅ Download completed successfully');
+                                alert('✅ Download started! Check your Downloads folder for {filename}');
+                            }} catch (error) {{
+                                console.error('Download error:', error);
+                                // Fallback method
+                                try {{
+                                    const fallbackContent = atob('{content_b64}');
+                                    const fallbackBlob = new Blob([fallbackContent], {{ type: 'text/plain;charset=utf-8' }});
+                                    const fallbackUrl = window.URL.createObjectURL(fallbackBlob);
+                                    const fallbackLink = document.createElement('a');
+                                    fallbackLink.href = fallbackUrl;
+                                    fallbackLink.download = '{filename}';
+                                    fallbackLink.click();
+                                    window.URL.revokeObjectURL(fallbackUrl);
+                                    alert('✅ Download started (fallback method)');
+                                }} catch (fallbackError) {{
+                                    console.error('Fallback download failed:', fallbackError);
+                                    alert('❌ Download failed. Please try refreshing the page or contact support.');
+                                }}
+                            }}
                         }}
-                    }}
-                    </script>
-                    """
+                        </script>
+                        """
+                        
+                    except Exception as encoding_error:
+                        print(f"Encoding error: {encoding_error}")
+                        # Ultra-safe fallback - just show the content
+                        download_html = f"""
+                        <div style="margin: 20px 0; padding: 20px; border: 2px solid #dc3545; border-radius: 10px; background-color: #f8f9fa;">
+                            <h3 style="color: #dc3545;">Download Issue</h3>
+                            <p>There was an encoding issue with the download. Please copy the content below:</p>
+                            <textarea style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;" readonly>
+{markdown_content[:1000]}...
+                            </textarea>
+                            <p><small>Content truncated for display. Please refresh and try again for full report.</small></p>
+                        </div>
+                        """
                     
                     download_widget = pn.pane.HTML(download_html, sizing_mode="stretch_width")
                     
@@ -429,7 +462,10 @@ class SustainabilityPanelApp(param.Parameterized):
                     self.chat_interface.send(download_widget, user="Download", respond=False)
                     
         except Exception as e:
-            self.chat_interface.send(f"Error preparing download: {str(e)}", user="System", respond=False)
+            error_msg = f"Error preparing download: {str(e)}"
+            print(f"Download error: {error_msg}")
+            print(f"Traceback: {traceback.format_exc()}")
+            self.chat_interface.send(error_msg, user="System", respond=False)
     
     def download_pdf_report(self, event):
         """Download instructions for PDF conversion - Web optimized"""
@@ -461,10 +497,10 @@ Your report contains professional formatting that will look great as a PDF! 🎯
         )
     
     def format_results_as_markdown(self, data: Dict[str, Any]) -> str:
-        """Format training results as markdown report"""
+        """Format training results as markdown report with safe encoding"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        # Extract data sections
+        # Extract data sections with safe fallbacks
         scenario = data.get('scenario', {})
         problematic_analysis = data.get('problematic_analysis', {})
         best_practices = data.get('best_practices', {})
@@ -472,11 +508,28 @@ Your report contains professional formatting that will look great as a PDF! 🎯
         personalized_feedback = data.get('personalized_feedback', {})
         key_takeaways = data.get('key_takeaways', [])
         
+        # Helper function to safely format lists
+        def safe_format_list(items, prefix="- "):
+            if not items:
+                return "- None specified\n"
+            result = ""
+            for item in items:
+                # Clean any problematic characters
+                clean_item = str(item).replace('\n', ' ').replace('\r', ' ')
+                result += f"{prefix}{clean_item}\n"
+            return result
+        
+        # Helper function to safely format text
+        def safe_format_text(text, default="N/A"):
+            if not text:
+                return default
+            return str(text).replace('\n', ' ').replace('\r', ' ')
+        
         markdown = f"""# Sustainability Training Report
 
 **Generated:** {timestamp}
-**Session ID:** {data.get('session_id', 'N/A')}
-**Learner Profile:** {data.get('learner_profile', 'Marketing Professional')}
+**Session ID:** {safe_format_text(data.get('session_id', 'N/A'))}
+**Learner Profile:** {safe_format_text(data.get('learner_profile', 'Marketing Professional'))}
 
 ---
 
@@ -486,28 +539,23 @@ This comprehensive sustainability training session was designed to enhance under
 
 ## 🏢 Business Scenario
 
-**Company:** {scenario.get('company_name', 'N/A')}
-**Industry:** {scenario.get('industry', 'N/A')}
-**Location:** {scenario.get('location', 'N/A')}
-**Size:** {scenario.get('company_size', 'N/A')}
+**Company:** {safe_format_text(scenario.get('company_name', 'N/A'))}
+**Industry:** {safe_format_text(scenario.get('industry', 'N/A'))}
+**Location:** {safe_format_text(scenario.get('location', 'N/A'))}
+**Size:** {safe_format_text(scenario.get('company_size', 'N/A'))}
 
 ### Company Overview
-**Product/Service:** {scenario.get('product_service', 'N/A')}
-**Target Audience:** {scenario.get('target_audience', 'N/A')}
+**Product/Service:** {safe_format_text(scenario.get('product_service', 'N/A'))}
+**Target Audience:** {safe_format_text(scenario.get('target_audience', 'N/A'))}
 
 ### Marketing Objectives
-"""
-        
-        # Add marketing objectives
-        for objective in scenario.get('marketing_objectives', []):
-            markdown += f"- {objective}\n"
-        
-        markdown += f"""
+{safe_format_list(scenario.get('marketing_objectives', []))}
+
 ### Sustainability Context
-{scenario.get('sustainability_context', 'N/A')}
+{safe_format_text(scenario.get('sustainability_context', 'N/A'))}
 
 ### Regulatory Framework
-{scenario.get('regulatory_context', 'N/A')}
+{safe_format_text(scenario.get('regulatory_context', 'N/A'))}
 
 ---
 
@@ -515,88 +563,78 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         
-        # Add problematic messages
+        # Add problematic messages with safe formatting
         for i, msg in enumerate(problematic_analysis.get('problematic_messages', []), 1):
-            markdown += f"""### Example {i}: {msg.get('id', f'Message {i}')}
+            markdown += f"""### Example {i}: {safe_format_text(msg.get('id', f'Message {i}'))}
 
 **Problematic Message:**
-> {msg.get('message', 'N/A')}
+> {safe_format_text(msg.get('message', 'N/A'))}
 
 **Problems Identified:**
-"""
-            for problem in msg.get('problems_identified', []):
-                markdown += f"- {problem}\n"
-            
-            markdown += f"""
+{safe_format_list(msg.get('problems_identified', []))}
+
 **Regulatory Violations:**
-"""
-            for violation in msg.get('regulatory_violations', []):
-                markdown += f"- {violation}\n"
-            
-            markdown += f"""
+{safe_format_list(msg.get('regulatory_violations', []))}
+
 **Why This Is Problematic:**
-{msg.get('why_problematic', 'N/A')}
+{safe_format_text(msg.get('why_problematic', 'N/A'))}
 
 **Potential Consequences:**
+{safe_format_list(msg.get('potential_consequences', []))}
+
+---
+
 """
-            for consequence in msg.get('potential_consequences', []):
-                markdown += f"- {consequence}\n"
-            
-            markdown += "\n---\n\n"
         
         markdown += """## ✅ Best Practice Corrections
 
 """
         
-        # Add corrected messages
+        # Add corrected messages with safe formatting
         for i, correction in enumerate(best_practices.get('corrected_messages', []), 1):
             markdown += f"""### Correction {i}
 
-**Original Message ID:** {correction.get('original_message_id', 'N/A')}
+**Original Message ID:** {safe_format_text(correction.get('original_message_id', 'N/A'))}
 
 **Improved Message:**
-> {correction.get('corrected_message', 'N/A')}
+> {safe_format_text(correction.get('corrected_message', 'N/A'))}
 
 **Changes Made:**
-"""
-            for change in correction.get('changes_made', []):
-                markdown += f"- {change}\n"
-            
-            markdown += f"""
+{safe_format_list(correction.get('changes_made', []))}
+
 **Compliance Notes:**
-{correction.get('compliance_notes', 'N/A')}
+{safe_format_text(correction.get('compliance_notes', 'N/A'))}
 
 **Best Practices Applied:**
+{safe_format_list(correction.get('best_practices_applied', []))}
+
+---
+
 """
-            for practice in correction.get('best_practices_applied', []):
-                markdown += f"- {practice}\n"
-            
-            markdown += "\n---\n\n"
         
         markdown += """## 📝 Knowledge Assessment
 
 """
         
-        # Add assessment questions
+        # Add assessment questions with safe formatting
         for i, question in enumerate(assessment_questions, 1):
             markdown += f"""### Question {i}
 
-**Type:** {question.get('type', 'N/A')} | **Difficulty:** {question.get('difficulty_level', 'N/A')}
+**Type:** {safe_format_text(question.get('type', 'N/A'))} | **Difficulty:** {safe_format_text(question.get('difficulty_level', 'N/A'))}
 
-**Question:** {question.get('question', 'N/A')}
+**Question:** {safe_format_text(question.get('question', 'N/A'))}
 
 """
             if question.get('options'):
                 markdown += "**Options:**\n"
-                for option in question.get('options', []):
-                    markdown += f"- {option}\n"
+                markdown += safe_format_list(question.get('options', []))
                 markdown += "\n"
             
-            markdown += f"""**Correct Answer:** {question.get('correct_answer', 'N/A')}
+            markdown += f"""**Correct Answer:** {safe_format_text(question.get('correct_answer', 'N/A'))}
 
-**Explanation:** {question.get('explanation', 'N/A')}
+**Explanation:** {safe_format_text(question.get('explanation', 'N/A'))}
 
-**Learning Objective:** {question.get('learning_objective', 'N/A')}
+**Learning Objective:** {safe_format_text(question.get('learning_objective', 'N/A'))}
 
 ---
 
@@ -606,26 +644,22 @@ This comprehensive sustainability training session was designed to enhance under
 
 ### Role-Specific Tips
 """
-        for tip in personalized_feedback.get('role_specific_tips', []):
-            markdown += f"- {tip}\n"
+        markdown += safe_format_list(personalized_feedback.get('role_specific_tips', []))
         
         markdown += """
 ### Team Training Recommendations
 """
-        for rec in personalized_feedback.get('team_training_recommendations', []):
-            markdown += f"- {rec}\n"
+        markdown += safe_format_list(personalized_feedback.get('team_training_recommendations', []))
         
         markdown += """
 ### Implementation Strategies
 """
-        for strategy in personalized_feedback.get('implementation_strategies', []):
-            markdown += f"- {strategy}\n"
+        markdown += safe_format_list(personalized_feedback.get('implementation_strategies', []))
         
         markdown += """
 ### Next Steps
 """
-        for step in personalized_feedback.get('next_steps', []):
-            markdown += f"- {step}\n"
+        markdown += safe_format_list(personalized_feedback.get('next_steps', []))
         
         markdown += """
 ---
@@ -633,8 +667,7 @@ This comprehensive sustainability training session was designed to enhance under
 ## 🎓 Key Takeaways
 
 """
-        for takeaway in key_takeaways:
-            markdown += f"- {takeaway}\n"
+        markdown += safe_format_list(key_takeaways)
         
         markdown += """
 ---
@@ -642,8 +675,7 @@ This comprehensive sustainability training session was designed to enhance under
 ## 📋 Compliance Checklist
 
 """
-        for item in data.get('compliance_checklist', []):
-            markdown += f"- [ ] {item}\n"
+        markdown += safe_format_list(data.get('compliance_checklist', []), "- [ ] ")
         
         markdown += f"""
 ---
