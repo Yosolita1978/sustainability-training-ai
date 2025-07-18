@@ -161,10 +161,8 @@ def main():
     
     # Get port configuration
     PORT = int(os.environ.get('PORT', 5007))
-    HOST = '0.0.0.0'  # Required for web deployment
     
     print(f"🌐 Server configuration:")
-    print(f"   Host: {HOST}")
     print(f"   Port: {PORT}")
     print(f"   Environment: {'Production' if os.getenv('PORT') else 'Development'}")
     print(f"   Panel version: {pn.__version__}")
@@ -175,7 +173,6 @@ def main():
         app = create_app()
         
         print("✅ Application ready to serve")
-        print(f"🔗 Access at: http://{HOST}:{PORT}")
         print("=" * 60)
         
         return app
@@ -185,43 +182,11 @@ def main():
         print(f"📊 Full traceback:\n{traceback.format_exc()}")
         return create_simple_health_check()
 
-# Create the application instance
-try:
-    print("🔄 Initializing application...")
-    app_instance = main()
-    print("✅ Application instance created")
-    
-    # Make the app servable (required by Panel)
-    app_instance.servable()
-    print("✅ Application is servable")
-    
-except Exception as e:
-    print(f"❌ Critical error during initialization: {e}")
-    print(f"📊 Full traceback:\n{traceback.format_exc()}")
-    
-    # Create fallback app
-    app_instance = create_simple_health_check()
-    app_instance.servable()
+# Create the application instance for Panel CLI serving
+print("🔄 Initializing application...")
+app_instance = main()
+print("✅ Application instance created")
 
-# For development testing
-if __name__ == "__main__":
-    PORT = int(os.environ.get('PORT', 5007))
-    HOST = '0.0.0.0'
-    
-    print(f"\n🚀 Starting Panel server...")
-    print(f"🔗 Server will be available on port {PORT}")
-    
-    try:
-        # Start the Panel server
-        pn.serve(
-            app_instance,
-            port=PORT,
-            host=HOST,
-            show=False,
-            allow_websocket_origin=["*"],
-            autoreload=False
-        )
-    except Exception as e:
-        print(f"❌ Server failed to start: {e}")
-        print(f"📊 Full traceback:\n{traceback.format_exc()}")
-        sys.exit(1)
+# Make the app servable (required by Panel CLI)
+app_instance.servable()
+print("✅ Application is servable")
