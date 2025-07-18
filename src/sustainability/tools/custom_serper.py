@@ -4,7 +4,7 @@ This replaces crewai-tools SerperDevTool to avoid dependency conflicts
 """
 
 from crewai.tools import BaseTool
-from typing import Type, Any, Dict
+from typing import Type, Any, Dict, Optional
 from pydantic import BaseModel, Field
 import os
 import requests
@@ -25,9 +25,15 @@ class CustomSerperTool(BaseTool):
     )
     args_schema: Type[BaseModel] = SerperSearchInput
     
+    # Properly declare api_key as a class field with default factory
+    api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SERPER_API_KEY"),
+        description="Serper API key for authentication"
+    )
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.api_key = os.getenv("SERPER_API_KEY")
+        # Check if API key is available and warn if not
         if not self.api_key:
             print("⚠️ Warning: SERPER_API_KEY not found in environment variables")
     
