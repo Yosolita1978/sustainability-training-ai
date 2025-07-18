@@ -32,7 +32,7 @@ if src_path not in sys.path:
 # Import Panel and configure for web deployment
 import panel as pn
 
-# Production Panel configuration
+# Production Panel configuration - removed deprecated parameters
 pn.extension()  # Minimal extensions for faster startup
 
 def check_environment():
