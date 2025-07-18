@@ -1,9 +1,8 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import SerperDevTool  # Use CrewAI's built-in search tool
 from pydantic import BaseModel, Field
 from typing import List
-import os  # ← Added for environment variables
+import os
 from datetime import datetime
 
 # Add Panel callback imports
