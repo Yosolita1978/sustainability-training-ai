@@ -33,7 +33,6 @@ if src_path not in sys.path:
 import panel as pn
 
 # Production Panel configuration
-pn.config.allow_websocket_origin = ["*"]  # Allow connections from Render domain
 pn.extension()  # Minimal extensions for faster startup
 
 def check_environment():
