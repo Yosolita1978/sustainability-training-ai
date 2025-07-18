@@ -1,9 +1,11 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
-from crewai_tools import FileReadTool, SerperDevTool
+from crewai.tools import FileReadTool  # ← Updated
+from langchain_community.utilities import SerpAPIWrapper  # ← New
+from langchain.tools import Tool  # ← New
 from pydantic import BaseModel, Field
 from typing import List
-import os
+import os  # ← Added for environment variables
 from datetime import datetime
 
 # Add Panel callback imports
@@ -106,7 +108,12 @@ class Sustainability():
         self.user_preferences = self._load_user_preferences()
         self._ensure_output_directory()
         # Initialize search tool
-        self.search_tool = SerperDevTool()
+        search = SerpAPIWrapper(serpapi_api_key=os.getenv('SERPER_API_KEY'))
+        self.search_tool = Tool(
+            name="search",
+            description="Search for current information about sustainability, regulations, and greenwashing examples",
+            func=search.run
+        )
         
     def _load_user_preferences(self):
         """Load user preferences from knowledge folder"""
