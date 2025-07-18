@@ -61,23 +61,12 @@ class SustainabilityPanelApp(param.Parameterized):
             height=500,
             sizing_mode="stretch_width",
             header="🌱 Sustainability Training AI Assistant",
-            help_text="Welcome! Configure your training preferences and click 'Start Training' to begin your personalized sustainability messaging course.",
-            placeholder_text="The AI will guide you through the training process..."
+            help_text="Your AI training session is in progress. Messages from the training agents will appear here.",
+            placeholder_text="Training messages will appear here...",
+            visible=False  # Hide initially
         )
         
-        # Send welcome message
-        welcome_msg = """🌱 **Welcome to Sustainability Training AI!**
-
-I'm your AI-powered sustainability messaging trainer. I'll help you:
-
-✅ **Learn compliant messaging** - Avoid greenwashing pitfalls
-✅ **Stay up-to-date** - Current regulations and best practices  
-✅ **Practice with realistic scenarios** - Industry-specific examples
-✅ **Get personalized feedback** - Tailored to your role and needs
-
-**Ready to start?** Configure your preferences on the left and click **"Start Training"** to begin!"""
-        
-        self.chat_interface.send(welcome_msg, user="System", respond=False)
+        # Don't send welcome message initially
     
     def setup_controls(self):
         """Initialize control widgets"""
@@ -186,14 +175,37 @@ I'm your AI-powered sustainability messaging trainer. I'll help you:
         )
         
         # Main content area
+        self.initial_instructions = pn.pane.Markdown("""
+        # 🌱 AI-Powered Sustainability Training
+        
+        **Get personalized training on compliant sustainability messaging**
+        
+        Our AI agents will research current market trends and regulations to create 
+        a customized training experience tailored to your industry and role.
+        
+        ## 🚀 How it works:
+        
+        1. **Configure** your training preferences on the left sidebar
+        2. **Click "Start Training"** to begin your personalized session
+        3. **Watch** as our AI agents work together to create your content:
+           - 🏢 Business scenario creation
+           - ⚠️ Problem identification  
+           - ✅ Best practice solutions
+           - 📝 Knowledge assessment
+        4. **Download** your comprehensive training report
+        
+        ## 🎯 What you'll learn:
+        
+        - **Regulatory compliance** - Stay up-to-date with current laws
+        - **Greenwashing avoidance** - Identify and fix problematic messaging
+        - **Best practices** - Learn from successful sustainability communications
+        - **Industry-specific guidance** - Tailored to your sector and role
+        
+        **Ready to begin?** Configure your preferences and click "Start Training"!
+        """, sizing_mode="stretch_both")
+        
         self.main_content = pn.Column(
-            pn.pane.Markdown("# 🌱 AI-Powered Sustainability Training"),
-            pn.pane.Markdown("""
-            **Get personalized training on compliant sustainability messaging**
-            
-            Our AI agents will research current market trends and regulations to create 
-            a customized training experience tailored to your industry and role.
-            """),
+            self.initial_instructions,
             self.chat_interface,
             sizing_mode="stretch_both"
         )
@@ -219,6 +231,10 @@ I'm your AI-powered sustainability messaging trainer. I'll help you:
         if self.is_training_active:
             self.chat_interface.send("⚠️ Training is already in progress. Please wait for it to complete.", user="System", respond=False)
             return
+        
+        # Show chat interface and hide instructions
+        self.initial_instructions.visible = False
+        self.chat_interface.visible = True
         
         # Disable start button
         self.start_button.disabled = True
@@ -654,15 +670,12 @@ This comprehensive sustainability training session was designed to enhance under
         self.download_md_button.disabled = True
         self.download_pdf_button.disabled = True
         
+        # Show instructions and hide chat
+        self.initial_instructions.visible = True
+        self.chat_interface.visible = False
+        
         # Clear chat
         self.chat_interface.clear()
-        
-        # Send welcome message again
-        welcome_msg = """🔄 **Session Reset Complete**
-
-Welcome back! Configure your training preferences and click 'Start Training' to begin a new personalized sustainability messaging course."""
-        
-        self.chat_interface.send(welcome_msg, user="System", respond=False)
     
     def servable(self):
         """Return the servable Panel application"""
