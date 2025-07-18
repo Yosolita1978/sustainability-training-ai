@@ -1,6 +1,6 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
-from crewai.tools import FileReadTool  # ← Updated
+# Removed FileReadTool import - using direct file reading instead
 from langchain_community.utilities import SerpAPIWrapper  # ← New
 from langchain.tools import Tool  # ← New
 from pydantic import BaseModel, Field
@@ -118,10 +118,24 @@ class Sustainability():
     def _load_user_preferences(self):
         """Load user preferences from knowledge folder"""
         try:
+            # Read file directly instead of using FileReadTool
             with open('knowledge/user_preference.txt', 'r') as file:
                 return file.read()
         except FileNotFoundError:
-            return "No user preferences found"
+            # Return default user preferences if file not found
+            return """USER_PROFILE:
+Name: Marketing Professional
+Role: Marketing Director
+Company_Type: Marketing/Communications Agency
+Location: Global
+Industry_Focus: Multi-client agency serving various industries
+
+SUSTAINABILITY_TRAINING_PREFERENCES:
+Experience_Level: Intermediate
+Primary_Interest: Building team capability in sustainability communications
+Company_Size: Small to medium agency
+Target_Audience_for_Messages: Diverse client base across industries
+Training_Goal: Capacitate team members on sustainability messaging compliance"""
     
     def _ensure_output_directory(self):
         """Create outputs directory if it doesn't exist"""
@@ -132,10 +146,7 @@ class Sustainability():
     def scenario_builder(self) -> Agent:
         return Agent(
             config=self.agents_config['scenario_builder'],
-            tools=[
-                FileReadTool(file_path='knowledge/user_preference.txt'),
-                self.search_tool
-            ],
+            tools=[self.search_tool],
             verbose=True
         )
     

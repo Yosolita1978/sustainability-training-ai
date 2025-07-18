@@ -281,11 +281,12 @@ class SustainabilityPanelApp(param.Parameterized):
             self.latest_results = result
             
             # Schedule UI updates on main thread
-            pn.io.add_periodic_callback(
-                lambda: self.on_training_complete(result),
-                period=100,
-                count=1
-            )
+            def complete_callback():
+                self.on_training_complete(result)
+            
+            # Use PeriodicCallback instead of add_periodic_callback
+            callback = pn.io.PeriodicCallback(callback=complete_callback, period=100, count=1)
+            callback.start()
             
         except Exception as e:
             error_msg = f"Training failed: {str(e)}"
@@ -293,11 +294,12 @@ class SustainabilityPanelApp(param.Parameterized):
             print(f"Full traceback: {traceback.format_exc()}")
             
             # Schedule error handling on main thread
-            pn.io.add_periodic_callback(
-                lambda: self.on_training_error(error_msg),
-                period=100,
-                count=1
-            )
+            def error_callback():
+                self.on_training_error(error_msg)
+            
+            # Use PeriodicCallback for error handling too
+            callback = pn.io.PeriodicCallback(callback=error_callback, period=100, count=1)
+            callback.start()
     
     def on_training_complete(self, result):
         """Handle training completion"""
