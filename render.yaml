@@ -11,7 +11,7 @@ services:
       echo "✅ Dependencies installed"
     startCommand: |
       echo "🚀 Starting Panel application..."
-      panel serve app.py --port=$PORT --allow-websocket-origin=*
+      panel serve app.py --port=$PORT --allow-websocket-origin=* --address=0.0.0.0
     healthCheckPath: /
     # Extended timeouts for health checks
     healthCheckDelay: 30
