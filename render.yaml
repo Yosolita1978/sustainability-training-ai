@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: sustainability-training-ai
+    env: python
+    plan: starter  # Can upgrade to 'standard' with Pro account for better performance
+    buildCommand: pip install -r requirements.txt
+    startCommand: panel serve app.py --port=$PORT --allow-websocket-origin=* --show=false --autoreload=false
+    healthCheckPath: /
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false  # Keep secure - you'll set this in Render dashboard
+      - key: SERPER_API_KEY
+        sync: false  # Keep secure - you'll set this in Render dashboard
+      - key: PANEL_ALLOW_WEBSOCKET_ORIGIN
+        value: "*"
+      - key: PANEL_OAUTH_PROVIDER
+        value: ""
+      - key: PYTHONPATH
+        value: "/opt/render/project/repo/src"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    # Auto-scaling settings (Pro account feature)
+    scaling:
+      minInstances: 1
+      maxInstances: 3  # Scale up automatically under load
+    # Disk space for temporary files
+    disk:
+      name: sustainability-data
+      mountPath: /tmp
+      sizeGB: 1
