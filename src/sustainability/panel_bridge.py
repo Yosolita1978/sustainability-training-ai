@@ -474,22 +474,12 @@ class SustainabilityPanelApp(param.Parameterized):
 
 **Step 1:** First download the Markdown report using the button above
 
-**Step 2:** Convert to PDF using any of these methods:
+**Step 2:** Convert to PDF:
+• Go to **https://www.pdfforge.org/online/en/markdown-to-pdf**
+• Upload your .md file or paste the content
+• Click "Convert to PDF"
+• Download your professionally formatted PDF report
 
-🌐 **Online Conversion (Easiest):**
-• Go to **pandoc.org/try**
-• Upload your .md file  
-• Select "PDF" as output format
-• Download the converted PDF
-
-💻 **Local Conversion:**
-• Install Pandoc: `brew install pandoc` (Mac) or `apt install pandoc` (Linux)
-• Run: `pandoc your_report.md -o report.pdf`
-
-📝 **Alternative Tools:**
-• **Typora** - Markdown editor with PDF export
-• **Mark Text** - Free markdown editor  
-• **VS Code** - With "Markdown PDF" extension
 
 Your report contains professional formatting that will look great as a PDF! 🎯""", 
             user="PDF Help", 
