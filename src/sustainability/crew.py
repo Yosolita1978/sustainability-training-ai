@@ -1,8 +1,6 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
-# Removed FileReadTool import - using direct file reading instead
-from langchain_community.utilities import SerpAPIWrapper  # ← New
-from langchain.tools import Tool  # ← New
+from crewai_tools import SerperDevTool  # Use CrewAI's built-in search tool
 from pydantic import BaseModel, Field
 from typing import List
 import os  # ← Added for environment variables
@@ -107,13 +105,8 @@ class Sustainability():
     def __init__(self) -> None:
         self.user_preferences = self._load_user_preferences()
         self._ensure_output_directory()
-        # Initialize search tool
-        search = SerpAPIWrapper(serpapi_api_key=os.getenv('SERPER_API_KEY'))
-        self.search_tool = Tool(
-            name="search",
-            description="Search for current information about sustainability, regulations, and greenwashing examples",
-            func=search.run
-        )
+        # Initialize CrewAI search tool
+        self.search_tool = SerperDevTool()
         
     def _load_user_preferences(self):
         """Load user preferences from knowledge folder"""
@@ -176,8 +169,17 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
     
     @task
     def scenario_creation_task(self) -> Task:
+        # Include user preferences in the task context
+        task_config = self.tasks_config['scenario_creation_task'].copy()
+        task_config['description'] = f"""
+        {task_config['description']}
+        
+        User Preferences Context:
+        {self.user_preferences}
+        """
+        
         return Task(
-            config=self.tasks_config['scenario_creation_task'],
+            config=task_config,
             agent=self.scenario_builder(),
             output_pydantic=SustainabilityScenario,
             callback=print_task_output
