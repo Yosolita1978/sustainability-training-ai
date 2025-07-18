@@ -124,21 +124,21 @@ I'm your AI-powered sustainability messaging trainer. I'll help you:
         
         self.download_md_button = pn.widgets.Button(
             name="📄 Download Report (MD)",
-            button_type="outline",
+            button_type="default",
             sizing_mode="stretch_width",
             disabled=True
         )
         
         self.download_pdf_button = pn.widgets.Button(
             name="📑 PDF Instructions",
-            button_type="outline", 
+            button_type="default", 
             sizing_mode="stretch_width",
             disabled=True
         )
         
         self.reset_button = pn.widgets.Button(
             name="🔄 Reset Session",
-            button_type="outline",
+            button_type="default",
             sizing_mode="stretch_width"
         )
         
