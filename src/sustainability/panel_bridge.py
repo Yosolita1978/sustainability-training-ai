@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Complete Panel Bridge for Sustainability Training Application - Web Optimized
+Sustainability Training Panel Web Application - Enhanced with Modern CSS
 """
 
 import panel as pn
@@ -17,9 +17,616 @@ import os
 # Minimal Panel configuration for web deployment
 pn.extension()
 
+# Modern CSS Styling
+MODERN_CSS = """
+<style>
+/* ===== DESIGN SYSTEM VARIABLES ===== */
+:root {
+  /* Colors - Modern Green Tech Theme */
+  --primary-color: #10b981;
+  --primary-dark: #059669;
+  --primary-light: #34d399;
+  --secondary-color: #3b82f6;
+  --accent-color: #8b5cf6;
+  
+  /* Neutrals */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --border-hover: #cbd5e1;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+}
+
+/* ===== GLOBAL RESET & BASE STYLES ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== MAIN LAYOUT CONTAINER ===== */
+.bk-root {
+  background: transparent !important;
+}
+
+/* Panel Row - Main Layout */
+.bk-Row {
+  background: transparent;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR STYLING ===== */
+.bk-Column:first-child {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--border-color);
+  position: sticky;
+  top: var(--space-lg);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+/* Sidebar Headers */
+.bk-Column:first-child .bk-Markdown h2 {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 var(--space-lg) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.bk-Column:first-child .bk-Markdown h2:before {
+  content: "⚙️";
+  font-size: 1.1em;
+}
+
+/* ===== MAIN CONTENT AREA ===== */
+.bk-Column:last-child {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  flex: 1;
+  min-height: 600px;
+}
+
+/* ===== FORM CONTROLS STYLING ===== */
+/* Select Widgets */
+.bk-input-group {
+  margin-bottom: var(--space-lg);
+}
+
+.bk-input-group label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+  display: block;
+  font-size: 0.95rem;
+}
+
+select.bk-input {
+  width: 100%;
+  padding: var(--space-md);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right var(--space-md) center;
+  background-repeat: no-repeat;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+
+select.bk-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgb(16 185 129 / 0.1);
+}
+
+select.bk-input:hover {
+  border-color: var(--border-hover);
+}
+
+/* ===== BUTTON STYLING ===== */
+.bk-btn {
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Primary Button (Start Training) */
+.bk-btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  box-shadow: var(--shadow-md);
+  font-size: 1.1rem;
+  padding: var(--space-lg) var(--space-xl);
+  font-weight: 700;
+}
+
+.bk-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--primary-dark), #047857);
+}
+
+.bk-btn-primary:active {
+  transform: translateY(0);
+}
+
+.bk-btn-primary:disabled {
+  background: linear-gradient(135deg, #9ca3af, #6b7280);
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+/* Default Buttons */
+.bk-btn-default {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.bk-btn-default:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.bk-btn-default:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Button Loading State */
+.bk-btn-primary:disabled:after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: white;
+  border-radius: 50%;
+  animation: button-loading-spinner 1s ease infinite;
+  left: var(--space-lg);
+}
+
+@keyframes button-loading-spinner {
+  from { transform: rotate(0turn); }
+  to { transform: rotate(1turn); }
+}
+
+/* ===== DIVIDER STYLING ===== */
+.bk-Divider {
+  border-color: var(--border-color);
+  margin: var(--space-xl) 0;
+  opacity: 0.6;
+}
+
+/* ===== CHAT INTERFACE STYLING ===== */
+.chat-interface {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chat Header */
+.bk-ChatInterface .bk-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  padding: var(--space-lg);
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-bottom: none;
+}
+
+/* Chat Messages Area */
+.bk-ChatInterface .bk-chat-feed {
+  background: var(--bg-secondary);
+  padding: var(--space-lg);
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Individual Chat Messages */
+.bk-ChatMessage {
+  margin-bottom: var(--space-lg);
+  animation: message-slide-in 0.3s ease-out;
+}
+
+@keyframes message-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chat Message Content */
+.bk-ChatMessage .bk-msg-content {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+/* System Messages */
+.bk-ChatMessage[data-user="System"] .bk-msg-content,
+.bk-ChatMessage[data-user="Results"] .bk-msg-content,
+.bk-ChatMessage[data-user="PDF Help"] .bk-msg-content {
+  background: linear-gradient(135deg, #ddd6fe, #e0e7ff);
+  border-left: 4px solid var(--accent-color);
+}
+
+/* Agent Messages */
+.bk-ChatMessage[data-user*="Agent"] .bk-msg-content {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Download Messages */
+.bk-ChatMessage[data-user="Download"] .bk-msg-content {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-left: 4px solid #f59e0b;
+}
+
+/* Chat Input Area */
+.bk-ChatInterface .bk-input-group {
+  background: white;
+  border-top: 1px solid var(--border-color);
+  padding: var(--space-lg);
+}
+
+/* ===== MARKDOWN CONTENT STYLING ===== */
+.bk-Markdown {
+  line-height: 1.7;
+}
+
+.bk-Markdown h1 {
+  color: var(--primary-color);
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: var(--space-lg);
+  line-height: 1.2;
+}
+
+.bk-Markdown h2 {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: var(--space-xl) 0 var(--space-lg) 0;
+  line-height: 1.3;
+}
+
+.bk-Markdown h3 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: var(--space-lg) 0 var(--space-md) 0;
+}
+
+.bk-Markdown p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  font-size: 1rem;
+}
+
+.bk-Markdown ul, .bk-Markdown ol {
+  color: var(--text-secondary);
+  padding-left: var(--space-xl);
+  margin-bottom: var(--space-md);
+}
+
+.bk-Markdown li {
+  margin-bottom: var(--space-sm);
+}
+
+.bk-Markdown code {
+  background: var(--bg-tertiary);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--accent-color);
+}
+
+.bk-Markdown strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ===== PROGRESS INDICATORS ===== */
+.progress-indicator {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin: var(--space-lg) 0;
+  border: 1px solid var(--border-color);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: var(--space-md) 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+/* ===== MOBILE RESPONSIVENESS ===== */
+@media (max-width: 768px) {
+  .bk-Row {
+    flex-direction: column;
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+  
+  .bk-Column:first-child {
+    position: static;
+    max-height: none;
+    order: 2;
+    margin-top: var(--space-md);
+  }
+  
+  .bk-Column:last-child {
+    order: 1;
+    min-height: 400px;
+  }
+  
+  /* Stack form controls */
+  .bk-input-group {
+    margin-bottom: var(--space-md);
+  }
+  
+  /* Larger touch targets */
+  .bk-btn {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+  
+  select.bk-input {
+    min-height: 48px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Chat interface mobile optimization */
+  .bk-ChatInterface .bk-chat-feed {
+    padding: var(--space-md);
+  }
+  
+  .bk-ChatMessage .bk-msg-content {
+    padding: var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .bk-Row {
+    padding: var(--space-sm);
+  }
+  
+  .bk-Column:first-child,
+  .bk-Column:last-child {
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+  }
+  
+  .bk-Markdown h1 {
+    font-size: 1.75rem;
+  }
+  
+  .bk-Markdown h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+.bk-btn:focus,
+select.bk-input:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000000;
+    --border-hover: #333333;
+    --text-secondary: #000000;
+  }
+}
+
+/* ===== DOWNLOAD WIDGET ENHANCEMENTS ===== */
+.download-widget {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  margin: var(--space-lg) 0;
+}
+
+.download-widget button {
+  background: linear-gradient(135deg, #059669, #047857);
+  color: white;
+  border: none;
+  padding: var(--space-lg) var(--space-xl);
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.download-widget button:hover {
+  background: linear-gradient(135deg, #047857, #065f46);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ===== LOADING STATES ===== */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===== ENHANCED VISUAL FEEDBACK ===== */
+.success-state {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+}
+
+.warning-state {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+
+.error-state {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+}
+
+.info-state {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .bk-Column:first-child {
+    display: none;
+  }
+  
+  .bk-Row {
+    flex-direction: column;
+  }
+  
+  .bk-ChatInterface {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}
+</style>
+"""
+
 class SustainabilityPanelApp(param.Parameterized):
     """
-    Panel-based web interface for the Sustainability Training System
+    Panel-based web interface for the Sustainability Training System - Enhanced Design
     """
     
     def __init__(self):
@@ -137,16 +744,19 @@ class SustainabilityPanelApp(param.Parameterized):
     
     def setup_layout(self):
         """Create the main application layout"""
+        # Inject CSS styles first
+        css_pane = pn.pane.HTML(MODERN_CSS, width=0, height=0, margin=0)
+        
         # Sidebar with controls
         self.sidebar = pn.Column(
-            pn.pane.Markdown("## 🎯 Training Configuration"),
+            pn.pane.Markdown("## Training Configuration"),
             self.user_industry,
             self.regional_regulations, 
             self.difficulty_level,
             pn.layout.Divider(),
             self.start_button,
             pn.layout.Divider(),
-            pn.pane.Markdown("## 📥 Export Results"),
+            pn.pane.Markdown("## Export Results"),
             self.download_md_button,
             self.download_pdf_button,
             pn.layout.Divider(),
@@ -154,7 +764,7 @@ class SustainabilityPanelApp(param.Parameterized):
             pn.Spacer(),
             pn.pane.Markdown("""
             ---
-            **🔧 Need Help?**
+            **Need Help?**
             
             This AI trainer creates personalized sustainability messaging courses using:
             - Real market research
@@ -208,12 +818,16 @@ class SustainabilityPanelApp(param.Parameterized):
             sizing_mode="stretch_both"
         )
         
-        # Complete layout
-        self.layout = pn.Row(
-            self.sidebar,
-            self.main_content,
-            sizing_mode="stretch_width",
-            height=700
+        # Complete layout with CSS
+        self.layout = pn.Column(
+            css_pane,  # CSS injection
+            pn.Row(
+                self.sidebar,
+                self.main_content,
+                sizing_mode="stretch_width",
+                height=700
+            ),
+            sizing_mode="stretch_width"
         )
     
     def chat_callback(self, contents: str, user: str, instance):
@@ -387,16 +1001,16 @@ class SustainabilityPanelApp(param.Parameterized):
                         content_b64 = base64.b64encode(content_bytes).decode('ascii')
                         
                         download_html = f"""
-                        <div style="margin: 20px 0; padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f8f9fa; text-align: center;">
-                            <h3 style="color: #28a745; margin-bottom: 15px;">📄 Training Report Ready!</h3>
-                            <p style="margin-bottom: 20px;">Click the button below to download your comprehensive sustainability training report.</p>
+                        <div class="download-widget" style="margin: 20px 0; padding: 25px; border: 2px solid #10b981; border-radius: 12px; background: linear-gradient(135deg, #f0fdfa, #ecfdf5); text-align: center; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+                            <h3 style="color: #047857; margin-bottom: 15px; font-size: 1.25rem; font-weight: 700;">📄 Training Report Ready!</h3>
+                            <p style="margin-bottom: 20px; color: #374151; line-height: 1.6;">Click the button below to download your comprehensive sustainability training report.</p>
                             <button onclick="downloadReportSafe()" 
-                                    style="background-color: #28a745; color: white; padding: 15px 30px; 
-                                           border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;
-                                           box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.3s;">
+                                    style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px 30px; 
+                                           border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;
+                                           box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px;">
                                 📄 Download {filename}
                             </button>
-                            <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                            <p style="margin-top: 15px; font-size: 14px; color: #6b7280; font-weight: 500;">
                                 File size: ~{len(markdown_content):,} characters | Format: Markdown (.md)
                             </p>
                         </div>
@@ -419,7 +1033,18 @@ class SustainabilityPanelApp(param.Parameterized):
                                 window.URL.revokeObjectURL(url);
                                 
                                 console.log('✅ Download completed successfully');
-                                alert('✅ Download started! Check your Downloads folder for {filename}');
+                                
+                                // Show success feedback
+                                const button = document.querySelector('button[onclick="downloadReportSafe()"]');
+                                if (button) {{
+                                    const originalText = button.innerHTML;
+                                    button.innerHTML = '✅ Downloaded!';
+                                    button.style.background = 'linear-gradient(135deg, #059669, #047857)';
+                                    setTimeout(() => {{
+                                        button.innerHTML = originalText;
+                                        button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                                    }}, 2000);
+                                }}
                             }} catch (error) {{
                                 console.error('Download error:', error);
                                 // Fallback method
@@ -487,7 +1112,7 @@ Your report contains professional formatting that will look great as a PDF! 🎯
         )
     
     def format_results_as_markdown(self, data: Dict[str, Any]) -> str:
-        """Format training results as markdown report with safe encoding"""
+        """Format training results as markdown report with safe encoding - PDF-friendly without emojis"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Extract data sections with safe fallbacks
@@ -523,11 +1148,11 @@ Your report contains professional formatting that will look great as a PDF! 🎯
 
 ---
 
-## 📋 Executive Summary
+## Executive Summary
 
 This comprehensive sustainability training session was designed to enhance understanding of compliant sustainability messaging and prevent greenwashing violations. The training covers industry-specific scenarios, regulatory compliance requirements, and practical application strategies.
 
-## 🏢 Business Scenario
+## Business Scenario
 
 **Company:** {safe_format_text(scenario.get('company_name', 'N/A'))}
 **Industry:** {safe_format_text(scenario.get('industry', 'N/A'))}
@@ -549,7 +1174,7 @@ This comprehensive sustainability training session was designed to enhance under
 
 ---
 
-## ⚠️ Problematic Messaging Analysis
+## Problematic Messaging Analysis
 
 """
         
@@ -576,7 +1201,7 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         
-        markdown += """## ✅ Best Practice Corrections
+        markdown += """## Best Practice Corrections
 
 """
         
@@ -602,7 +1227,7 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         
-        markdown += """## 📝 Knowledge Assessment
+        markdown += """## Knowledge Assessment
 
 """
         
@@ -630,7 +1255,7 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         
-        markdown += """## 🎯 Personalized Feedback
+        markdown += """## Personalized Feedback
 
 ### Role-Specific Tips
 """
@@ -654,7 +1279,7 @@ This comprehensive sustainability training session was designed to enhance under
         markdown += """
 ---
 
-## 🎓 Key Takeaways
+## Key Takeaways
 
 """
         markdown += safe_format_list(key_takeaways)
@@ -662,7 +1287,7 @@ This comprehensive sustainability training session was designed to enhance under
         markdown += """
 ---
 
-## 📋 Compliance Checklist
+## Compliance Checklist
 
 """
         markdown += safe_format_list(data.get('compliance_checklist', []), "- [ ] ")
