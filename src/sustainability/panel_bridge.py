@@ -951,10 +951,12 @@ class SustainabilityPanelApp(param.Parameterized):
                     scenario = data.get('scenario', {})
                     problematic_analysis = data.get('problematic_analysis', {})
                     assessment_questions = data.get('assessment_questions', [])
+                    sources_used = data.get('sources_used', [])
                     
                     company_name = scenario.get('company_name', 'Example Company')
                     problem_count = len(problematic_analysis.get('problematic_messages', []))
                     question_count = len(assessment_questions)
+                    source_count = len(sources_used)
                     
                     summary = f"""📊 **Training Results Summary**
 
@@ -962,13 +964,15 @@ class SustainabilityPanelApp(param.Parameterized):
 **Industry:** {scenario.get('industry', 'N/A')}
 **Problems Identified:** {problem_count} messaging issues
 **Assessment Questions:** {question_count} knowledge checks
+**Sources Referenced:** {source_count} research sources
 **Training Duration:** Complete 4-module course
 
 **Next Steps:**
 1. ⬇️ Download your detailed report using the buttons on the left
 2. 📚 Review the assessment questions and explanations
 3. 🎯 Implement the compliance recommendations
-4. 👥 Share insights with your team"""
+4. 📖 Check the sources section for additional research
+5. 👥 Share insights with your team"""
                     
                     self.chat_interface.send(summary, user="Results", respond=False)
                     
@@ -1112,7 +1116,7 @@ Your report contains professional formatting that will look great as a PDF! 🎯
         )
     
     def format_results_as_markdown(self, data: Dict[str, Any]) -> str:
-        """Format training results as markdown report with safe encoding - PDF-friendly without emojis"""
+        """Format training results as markdown report with safe encoding - PDF-friendly with comprehensive sources section"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Extract data sections with safe fallbacks
@@ -1122,6 +1126,7 @@ Your report contains professional formatting that will look great as a PDF! 🎯
         assessment_questions = data.get('assessment_questions', [])
         personalized_feedback = data.get('personalized_feedback', {})
         key_takeaways = data.get('key_takeaways', [])
+        sources_used = data.get('sources_used', [])  # NEW: Get sources from report
         
         # Helper function to safely format lists
         def safe_format_list(items, prefix="- "):
@@ -1291,6 +1296,100 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         markdown += safe_format_list(data.get('compliance_checklist', []), "- [ ] ")
+        
+        # NEW: Add comprehensive Sources section
+        markdown += """
+---
+
+## Sources
+
+This training session referenced the following sources for research, regulatory guidance, and real-world examples:
+
+"""
+        
+        if sources_used:
+            # Organize sources by type and agent
+            sources_by_type = {}
+            sources_by_agent = {}
+            
+            for source in sources_used:
+                source_type = source.get('type', 'other')
+                used_by_agent = source.get('used_by_agent', 'unknown')
+                
+                # Group by type
+                if source_type not in sources_by_type:
+                    sources_by_type[source_type] = []
+                sources_by_type[source_type].append(source)
+                
+                # Group by agent
+                if used_by_agent not in sources_by_agent:
+                    sources_by_agent[used_by_agent] = []
+                sources_by_agent[used_by_agent].append(source)
+            
+            # Display by source type
+            type_headers = {
+                'regulatory': '### Regulatory Sources',
+                'company_example': '### Company Examples and Case Studies',
+                'best_practice': '### Best Practice Examples',
+                'market_research': '### Market Research and Trends',
+                'news': '### Recent News and Developments',
+                'knowledge_panel': '### Reference Sources',
+                'web_search': '### Additional Research Sources',
+                'other': '### Other Sources'
+            }
+            
+            for source_type, type_sources in sources_by_type.items():
+                header = type_headers.get(source_type, f'### {source_type.title()} Sources')
+                markdown += f"{header}\n\n"
+                
+                for i, source in enumerate(type_sources, 1):
+                    title = safe_format_text(source.get('title', 'Untitled'))
+                    url = safe_format_text(source.get('url', 'No URL'))
+                    description = safe_format_text(source.get('description', ''))
+                    access_date = safe_format_text(source.get('access_date', 'Unknown'))
+                    used_by = safe_format_text(source.get('used_by_agent', 'Unknown'))
+                    query = safe_format_text(source.get('query', ''))
+                    
+                    markdown += f"{i}. **{title}**\n"
+                    markdown += f"   - URL: {url}\n"
+                    markdown += f"   - Accessed: {access_date}\n"
+                    markdown += f"   - Used by: {used_by.replace('_', ' ').title()}\n"
+                    
+                    if description and description != 'N/A':
+                        markdown += f"   - Description: {description}\n"
+                    
+                    if query and query != 'N/A':
+                        markdown += f"   - Search Query: {query}\n"
+                    
+                    markdown += "\n"
+                
+                markdown += "---\n\n"
+            
+            # Add source summary
+            total_sources = len(sources_used)
+            unique_domains = len(set(source.get('url', '').split('/')[2] if source.get('url') and len(source.get('url', '').split('/')) > 2 else 'unknown' for source in sources_used))
+            agents_with_sources = len(set(source.get('used_by_agent', 'unknown') for source in sources_used))
+            
+            markdown += f"""### Source Summary
+
+**Total Sources Referenced:** {total_sources}
+**Unique Domains:** {unique_domains}
+**AI Agents Contributing Sources:** {agents_with_sources}
+
+All sources were accessed during the training session and represent current information as of the session date.
+
+"""
+        else:
+            markdown += """### No Sources Available
+
+No source information was collected during this training session. This may indicate:
+- Sources were not properly tracked by the AI agents
+- The search tool encountered issues
+- The training ran in offline mode
+
+For future sessions, ensure proper source tracking is enabled.
+
+"""
         
         markdown += f"""
 ---

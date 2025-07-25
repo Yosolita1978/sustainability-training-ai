@@ -82,6 +82,16 @@ class PersonalizedFeedback(BaseModel):
     next_steps: List[str] = Field(description="Recommended next steps for continued learning")
     additional_resources: List[str] = Field(description="Additional resources for further learning")
 
+class SourceReference(BaseModel):
+    """A source reference used in the training"""
+    title: str = Field(description="Title of the source")
+    url: str = Field(description="URL of the source")
+    type: str = Field(description="Type of source (web_search, news, knowledge_panel, regulatory)")
+    description: str = Field(description="Brief description of the source content")
+    access_date: str = Field(description="Date when the source was accessed")
+    used_by_agent: str = Field(description="Which agent used this source")
+    query: str = Field(description="Search query that found this source")
+
 class ComprehensiveTrainingReport(BaseModel):
     """Complete sustainability training session report"""
     session_id: str = Field(description="Training session identifier")
@@ -94,6 +104,10 @@ class ComprehensiveTrainingReport(BaseModel):
     personalized_feedback: PersonalizedFeedback = Field(description="Personalized feedback and recommendations")
     key_takeaways: List[str] = Field(description="Key takeaways from the training session")
     compliance_checklist: List[str] = Field(description="Checklist for ensuring message compliance")
+    sources_used: List[SourceReference] = Field(
+        default_factory=list,
+        description="All sources referenced during the training session, organized by agent and type"
+    )
 
 @CrewBase
 class Sustainability():

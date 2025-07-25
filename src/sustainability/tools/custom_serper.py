@@ -1,14 +1,16 @@
 """
 Custom Serper Search Tool - Compatible with Web Deployment
 This replaces crewai-tools SerperDevTool to avoid dependency conflicts
+Enhanced with better source tracking for sustainability training reports
 """
 
 from crewai.tools import BaseTool
-from typing import Type, Any, Dict, Optional
+from typing import Type, Any, Dict, Optional, List, Tuple
 from pydantic import BaseModel, Field
 import os
 import requests
 import json
+from datetime import datetime
 
 class SerperSearchInput(BaseModel):
     """Input schema for Serper search tool."""
@@ -21,7 +23,8 @@ class CustomSerperTool(BaseTool):
     description: str = (
         "A search tool that uses Serper API to search the web for information. "
         "Useful for finding current information, market trends, regulatory updates, "
-        "company examples, and sustainability best practices."
+        "company examples, and sustainability best practices. "
+        "Returns both formatted results and source references for citation."
     )
     args_schema: Type[BaseModel] = SerperSearchInput
     
@@ -67,23 +70,81 @@ class CustomSerperTool(BaseTool):
             
             # Parse results
             data = response.json()
-            return self._format_results(data)
+            formatted_results, sources = self._format_results_with_sources(data, query)
+            
+            # Return formatted results with embedded source information
+            return self._combine_results_and_sources(formatted_results, sources, query)
             
         except requests.exceptions.RequestException as e:
             return f"Search request failed: {str(e)}"
         except Exception as e:
             return f"Search error: {str(e)}"
     
-    def _format_results(self, data: Dict[str, Any]) -> str:
-        """Format search results into readable text"""
+    def _extract_sources_from_data(self, data: Dict[str, Any], query: str) -> List[Dict[str, str]]:
+        """Extract clean source data from search results"""
+        sources = []
+        access_date = datetime.now().strftime("%Y-%m-%d")
+        
+        # Extract from organic results
+        if "organic" in data:
+            for result in data["organic"][:8]:  # Top 8 results
+                source = {
+                    "title": result.get("title", "").strip(),
+                    "url": result.get("link", "").strip(),
+                    "description": result.get("snippet", "").strip()[:200],  # Limit description length
+                    "type": "web_search",
+                    "query": query,
+                    "access_date": access_date
+                }
+                
+                # Only add if we have both title and URL
+                if source["title"] and source["url"]:
+                    sources.append(source)
+        
+        # Extract from knowledge panel
+        if "knowledgeGraph" in data:
+            kg = data["knowledgeGraph"]
+            if "title" in kg and "url" in kg:
+                source = {
+                    "title": kg["title"].strip(),
+                    "url": kg["url"].strip(),
+                    "description": kg.get("description", "").strip()[:200],
+                    "type": "knowledge_panel",
+                    "query": query,
+                    "access_date": access_date
+                }
+                sources.append(source)
+        
+        # Extract from news results
+        if "news" in data:
+            for news in data["news"][:3]:  # Top 3 news
+                source = {
+                    "title": news.get("title", "").strip(),
+                    "url": news.get("link", "").strip(),
+                    "description": news.get("snippet", "").strip()[:200],
+                    "type": "news",
+                    "query": query,
+                    "access_date": access_date,
+                    "date": news.get("date", "")
+                }
+                
+                # Only add if we have both title and URL
+                if source["title"] and source["url"]:
+                    sources.append(source)
+        
+        return sources
+    
+    def _format_results_with_sources(self, data: Dict[str, Any], query: str) -> Tuple[str, List[Dict[str, str]]]:
+        """Format search results into readable text and extract sources"""
         
         results = []
+        sources = self._extract_sources_from_data(data, query)
         
         # Add organic results
         if "organic" in data:
             results.append("=== Search Results ===\n")
             
-            for i, result in enumerate(data["organic"][:5], 1):  # Top 5 results
+            for i, result in enumerate(data["organic"][:5], 1):  # Top 5 results for display
                 title = result.get("title", "No title")
                 snippet = result.get("snippet", "No description")
                 link = result.get("link", "No URL")
@@ -125,8 +186,43 @@ class CustomSerperTool(BaseTool):
         formatted_results = "\n".join(results)
         
         if not formatted_results.strip():
-            return "No relevant search results found for this query."
+            formatted_results = "No relevant search results found for this query."
         
+        return formatted_results, sources
+    
+    def _combine_results_and_sources(self, formatted_results: str, sources: List[Dict[str, str]], query: str) -> str:
+        """Combine formatted results with source information for agent consumption"""
+        
+        # Start with the formatted results
+        combined_output = formatted_results
+        
+        # Add source information in a structured way that agents can easily parse
+        if sources:
+            combined_output += "\n\n=== SOURCES FOR CITATION ===\n"
+            combined_output += f"Query: {query}\n"
+            combined_output += f"Sources found: {len(sources)}\n\n"
+            
+            for i, source in enumerate(sources[:10], 1):  # Limit to top 10 sources
+                combined_output += f"[{i}] {source['title']}\n"
+                combined_output += f"    URL: {source['url']}\n"
+                combined_output += f"    Type: {source['type']}\n"
+                if source.get('date'):
+                    combined_output += f"    Date: {source['date']}\n"
+                combined_output += f"    Access Date: {source['access_date']}\n"
+                if source['description']:
+                    combined_output += f"    Description: {source['description']}\n"
+                combined_output += "\n"
+            
+            # Add instruction for agents
+            combined_output += "AGENT INSTRUCTION: When referencing information from this search, "
+            combined_output += "please include the source URL and title in your research_sources field. "
+            combined_output += "Use the format: [Title] - [URL] (accessed [Access Date])\n\n"
+        
+        return combined_output
+    
+    def _format_results(self, data: Dict[str, Any]) -> str:
+        """Legacy method - kept for backward compatibility"""
+        formatted_results, _ = self._format_results_with_sources(data, "legacy_query")
         return formatted_results
     
     async def _arun(self, query: str) -> str:
