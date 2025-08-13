@@ -3,7 +3,7 @@ models.py — Pydantic data models for Sustainability Business Toolkit
 Defines validated structures for inputs and outputs to preserve functionality.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -72,9 +72,13 @@ class FinalReport(BaseModel):
 # ----------------------
 
 class BusinessAnalysisResult(BaseModel):
-    business_benchmark: Optional[BusinessBenchmark]
-    opportunity_list: Optional[List[OpportunityItem]]
-    operational_risk_list: Optional[List[str]]
+    business_benchmark: Optional[BusinessBenchmark] = None
+    opportunity_list: Optional[List[OpportunityItem]] = None
+    operational_risk_list: Optional[List[str]] = None
+    quick_reference_tools: Optional[List[Dict[str, Any]]] = None
+    market_intelligence: Optional[List[Dict[str, Any]]] = None
+    communication_templates: Optional[List[Dict[str, Any]]] = None
+    role_specific_guides: Optional[List[Dict[str, Any]]] = None
 
 
 class StrategyResult(BaseModel):

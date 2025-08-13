@@ -5,12 +5,30 @@ import os
 import json
 from datetime import datetime
 
-# Ignore known warnings
-warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
-warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+# SMART PATH DETECTION: Find the actual src directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
+# If we're in src/sustainability/, go up two levels to find src/
+if current_dir.endswith('src/sustainability'):
+    src_path = os.path.dirname(current_dir)  # Go up one level to src/
+elif current_dir.endswith('sustainability'):
+    src_path = os.path.join(os.path.dirname(os.path.dirname(current_dir)), 'src')  # Project root + src
+else:
+    # Assume we're in project root
+    src_path = os.path.join(current_dir, 'src')
+
+# Clear old imports
+for module_name in list(sys.modules.keys()):
+    if module_name.startswith('sustainability'):
+        del sys.modules[module_name]
+
+sys.path.insert(0, src_path)
+print(f"🔍 Debug: Using src path: {src_path}")
+
+# Rest of your imports...
 from sustainability.crew import SustainabilityCrew
 
+print(f"🔍 Debug: Imported crew from: {SustainabilityCrew.__module__}")
 
 def save_business_toolkit(result, session_id):
     """Save a comprehensive business toolkit report - Web environment compatible"""
