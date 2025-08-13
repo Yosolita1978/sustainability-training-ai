@@ -1,5 +1,5 @@
 # Complete src/sustainability/config/tasks.yaml
-# Updated with toolkit components instead of assessment questions
+# Updated for pure business toolkit focus - NO assessments or tests
 
 scenario_creation_task:
   description: >
@@ -9,6 +9,9 @@ scenario_creation_task:
     company background, product/service details, target audience, marketing objectives, and specific 
     sustainability claims the company wants to communicate. Ensure the scenario is relevant to 
     {user_industry} and incorporates {regional_regulations} compliance requirements.
+    
+    Focus on creating a practical business context that marketing teams can relate to and learn from.
+    Use current market research to ensure the scenario reflects real-world challenges and opportunities.
     
     IMPORTANT: When using the search tool, pay attention to the "SOURCES FOR CITATION" section 
     in the results. Include all relevant source URLs and titles in your market_research_sources 
@@ -30,6 +33,9 @@ mistake_generation_task:
     vague claims, unsubstantiated superlatives, misleading scope, and future commitments without 
     accountability. Use recent case studies and regulatory examples.
     
+    This analysis will help marketing teams understand what NOT to do and recognize compliance risks
+    in their own messaging. Focus on practical business implications and regulatory consequences.
+    
     IMPORTANT: When using the search tool, pay attention to the "SOURCES FOR CITATION" section 
     in the results. Include all relevant source URLs and titles in your research_sources 
     field using the format: [Title] - [URL] (accessed [Access Date]). This includes regulatory 
@@ -39,7 +45,7 @@ mistake_generation_task:
     explanations of why each is problematic, specific regulatory violations, and greenwashing 
     patterns identified. Include references to current EU directives, recent enforcement cases, 
     and industry guidelines. Ensure research_sources field contains proper citations for all 
-    sources used.
+    sources used. Focus on business-relevant compliance insights.
   agent: mistake_illustrator
   context:
     - scenario_creation_task
@@ -53,6 +59,9 @@ best_practice_transformation_task:
     Explain the changes made and reference current best practices, recent regulatory updates, and 
     industry standards that support the revised messaging.
     
+    Focus on creating immediately usable, compliant alternatives that marketing teams can implement.
+    Ensure each corrected message maintains business appeal while meeting regulatory requirements.
+    
     IMPORTANT: When using the search tool, pay attention to the "SOURCES FOR CITATION" section 
     in the results. Include all relevant source URLs and titles in your research_sources 
     field using the format: [Title] - [URL] (accessed [Access Date]). This includes best 
@@ -62,57 +71,65 @@ best_practice_transformation_task:
     practices, explanation of changes made, current regulatory compliance notes, and references 
     to successful real-world examples. Include recent case studies of effective sustainability 
     communications. Ensure research_sources field contains proper citations for all sources used.
+    Focus on practical implementation guidance for marketing teams.
   agent: best_practice_coach
   context:
     - scenario_creation_task
     - mistake_generation_task
 
-assessment_and_feedback_task:
+business_toolkit_generation_task:
   description: >
     Create a comprehensive business toolkit for marketing teams using the ComprehensiveTrainingReport 
-    data structure. You must populate the following specific fields with toolkit content:
-
-    REQUIRED PYDANTIC FIELDS TO POPULATE:
-    1. quick_reference_tools: List[QuickReferenceItem] - Create 4-6 items
-    2. market_intelligence: List[TrendingIntelligence] - Create 2-3 items  
-    3. communication_templates: List[CommunicationTemplate] - Create 3-4 items
-    4. role_specific_guides: List[RoleSpecificGuide] - Create 2-3 items
+    data structure. Your goal is to provide immediate business value through practical tools and templates.
     
-    IMPORTANT: Leave assessment_questions as empty list [] - do not create any assessment questions.
+    You must populate these specific toolkit components with actionable content:
 
-    FOR QUICK REFERENCE TOOLS, create these specific items:
+    REQUIRED BUSINESS TOOLKIT COMPONENTS:
+    1. quick_reference_tools: List[QuickReferenceItem] - Create 4-6 practical daily-use tools
+    2. market_intelligence: List[TrendingIntelligence] - Create 2-3 current market trend analyses  
+    3. communication_templates: List[CommunicationTemplate] - Create 3-4 business communication templates
+    4. role_specific_guides: List[RoleSpecificGuide] - Create 2-3 role-specific implementation guides
+    
+    FOR QUICK REFERENCE TOOLS, create these essential business tools:
     - Greenwashing red flags checklist (category: "red_flags", display_format: "checklist", priority: "high")
     - Safe word alternatives guide (category: "safe_alternatives", display_format: "comparison_table", priority: "high")  
-    - Pre-approval checklist (category: "approval_checklist", display_format: "checklist", priority: "medium")
+    - Pre-publication approval checklist (category: "approval_checklist", display_format: "checklist", priority: "medium")
     - Risk assessment flowchart (category: "risk_assessment", display_format: "flowchart", priority: "medium")
+    - Brand safety guidelines (category: "brand_safety", display_format: "guide", priority: "high")
+    - Crisis communication prep tool (category: "crisis_prep", display_format: "checklist", priority: "medium")
 
-    FOR MARKET INTELLIGENCE, create:
-    - Rising sustainability claims trends (trend_type: "rising_claims", industry_specific: true)
-    - Declining/risky messaging trends (trend_type: "declining_claims", industry_specific: false)
-    - Current regulatory changes (trend_type: "regulatory_changes")
+    FOR MARKET INTELLIGENCE, research and create:
+    - Rising sustainability claims trends in the target industry (trend_type: "rising_claims", industry_specific: true)
+    - Declining/risky messaging patterns to avoid (trend_type: "declining_claims", industry_specific: false)
+    - Current regulatory changes and enforcement trends (trend_type: "regulatory_changes", industry_specific: false)
 
-    FOR COMMUNICATION TEMPLATES, create:
-    - Legal review email (template_type: "email_legal_review", recipient_role: "legal_team", urgency_level: "routine")
-    - Vendor brief (template_type: "vendor_brief", recipient_role: "agency_partner", urgency_level: "routine")
-    - Internal approval (template_type: "internal_approval", recipient_role: "c_suite", urgency_level: "urgent")
-    - Crisis response (template_type: "crisis_response", recipient_role: "media", urgency_level: "crisis")
+    FOR COMMUNICATION TEMPLATES, create ready-to-use templates:
+    - Legal review request email (template_type: "email_legal_review", recipient_role: "legal_team", urgency_level: "routine")
+    - Agency/vendor sustainability brief template (template_type: "vendor_brief", recipient_role: "agency_partner", urgency_level: "routine")
+    - Executive approval request (template_type: "internal_approval", recipient_role: "c_suite", urgency_level: "urgent")
+    - Crisis response communication (template_type: "crisis_response", recipient_role: "media", urgency_level: "crisis")
 
-    FOR ROLE-SPECIFIC GUIDES, create guides for:
-    - Content creators (role: "content_creator")
-    - Campaign managers (role: "campaign_manager")
-    - Brand managers (role: "brand_manager")
+    FOR ROLE-SPECIFIC GUIDES, create implementation guides for:
+    - Content creators and copywriters (role: "content_creator", role_title: "Content Creator & Copywriter")
+    - Campaign managers and marketing leads (role: "campaign_manager", role_title: "Campaign Manager & Marketing Lead")
+    - Brand managers and strategy leads (role: "brand_manager", role_title: "Brand Manager & Strategy Lead")
 
-    Search for current examples and best practices to populate these toolkit components with real, 
-    actionable content. Base your research on current market trends and regulatory requirements.
+    Search extensively for current examples, industry templates, and best practices to populate these 
+    toolkit components with real, actionable content. Base your research on current market trends, 
+    regulatory requirements, and successful business implementations.
 
-    CRITICAL: You must output a complete ComprehensiveTrainingReport with all toolkit fields populated 
-    and assessment_questions as an empty list.
+    Focus on immediate business value - create tools that marketing teams can use starting today.
+    Ensure all content is practical, legally-informed, and industry-relevant.
+
+    CRITICAL: You must output a complete ComprehensiveTrainingReport with all four toolkit 
+    components fully populated with practical business content.
   expected_output: >
-    A complete ComprehensiveTrainingReport with all four toolkit components populated: 
-    quick_reference_tools (4-6 items), market_intelligence (2-3 items), communication_templates 
-    (3-4 items), and role_specific_guides (2-3 items). The assessment_questions field must be 
-    an empty list. Include comprehensive sources_used section with all research references.
-  agent: assessment_agent
+    A complete ComprehensiveTrainingReport with all four business toolkit components populated: 
+    quick_reference_tools (4-6 practical items), market_intelligence (2-3 current trend analyses), 
+    communication_templates (3-4 ready-to-use templates), and role_specific_guides (2-3 implementation guides). 
+    Include comprehensive sources_used section with all research references. Focus on immediate 
+    business implementation value and practical daily-use tools for marketing professionals.
+  agent: business_toolkit_creator
   context:
     - scenario_creation_task
     - mistake_generation_task

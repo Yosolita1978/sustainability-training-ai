@@ -135,10 +135,10 @@ class PersonalizedFeedback(BaseModel):
     next_steps: List[str] = Field(description="Recommended next steps for continued learning")
     additional_resources: List[str] = Field(description="Additional resources for further learning")
 
-# ===== COMPREHENSIVE TRAINING REPORT (TOOLKIT ONLY) ===== #
+# ===== COMPREHENSIVE BUSINESS TOOLKIT REPORT ===== #
 
 class ComprehensiveTrainingReport(BaseModel):
-    """Complete sustainability training toolkit - No assessments/tests"""
+    """Complete sustainability business toolkit - Pure business focus, no assessments"""
     session_id: str = Field(description="Training session identifier")
     timestamp: str = Field(description="Session timestamp")
     learner_profile: str = Field(description="Learner profile summary")
@@ -148,24 +148,24 @@ class ComprehensiveTrainingReport(BaseModel):
     problematic_analysis: ProblematicMessageAnalysis = Field(description="Analysis of problematic messages")
     best_practices: BestPracticeGuidance = Field(description="Best practice guidance and corrections")
     
-    # Business Toolkit Components
+    # Business Toolkit Components - The core focus
     quick_reference_tools: List[QuickReferenceItem] = Field(description="Quick reference tools for daily use")
     market_intelligence: List[TrendingIntelligence] = Field(description="Current market intelligence")
     communication_templates: List[CommunicationTemplate] = Field(description="Business communication templates")
     role_specific_guides: List[RoleSpecificGuide] = Field(description="Role-specific guidance")
     
-    # Additional Components (NO TESTS/ASSESSMENTS)
+    # Business Implementation Components
     personalized_feedback: PersonalizedFeedback = Field(description="Personalized feedback and recommendations")
-    key_takeaways: List[str] = Field(description="Key takeaways from the training session")
+    key_takeaways: List[str] = Field(description="Key takeaways from the business analysis")
     compliance_checklist: List[str] = Field(description="Checklist for ensuring message compliance")
     sources_used: List[SourceReference] = Field(
         default_factory=list,
-        description="All sources referenced during the training session"
+        description="All sources referenced during the business analysis"
     )
 
 @CrewBase
 class Sustainability():
-    """Sustainability Messaging Training Crew - Toolkit Focus"""
+    """Sustainability Business Toolkit Generation Crew"""
     
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
@@ -249,9 +249,10 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
         )
     
     @agent
-    def assessment_agent(self) -> Agent:
+    def business_toolkit_creator(self) -> Agent:
+        """Renamed from assessment_agent to reflect pure business focus"""
         return Agent(
-            config=self.agents_config['assessment_agent'],
+            config=self.agents_config['assessment_agent'],  # Will update config file separately
             tools=[self.search_tool],
             verbose=True
         )
@@ -292,18 +293,18 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
         )
     
     @task
-    def assessment_and_feedback_task(self) -> Task:
-        """Generate business toolkit (no assessments/tests)"""
+    def business_toolkit_generation_task(self) -> Task:
+        """Generate comprehensive business toolkit - Pure business focus"""
         output_file = None
         try:
             if os.path.exists('outputs') or os.makedirs('outputs', exist_ok=True):
-                output_file = 'outputs/sustainability_toolkit.json'
+                output_file = 'outputs/sustainability_business_toolkit.json'
         except:
             pass
         
         return Task(
-            config=self.tasks_config['assessment_and_feedback_task'],
-            agent=self.assessment_agent(),
+            config=self.tasks_config['assessment_and_feedback_task'],  # Will update config separately
+            agent=self.business_toolkit_creator(),
             output_pydantic=ComprehensiveTrainingReport,
             output_file=output_file,
             callback=print_task_output
@@ -311,7 +312,7 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
     
     @crew
     def crew(self) -> Crew:
-        """Creates the Sustainability Training crew"""
+        """Creates the Sustainability Business Toolkit Generation crew"""
         return Crew(
             agents=self.agents,
             tasks=self.tasks,

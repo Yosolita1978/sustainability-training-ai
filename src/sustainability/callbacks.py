@@ -18,7 +18,7 @@ class PanelCallbackHandler:
         self.chat_interface = chat_interface
         
     def set_session_id(self, session_id: str):
-        """Set the current training session ID"""
+        """Set the current business toolkit session ID"""
         self.session_id = session_id
         
     def send_message(self, message: str, user: str = "System", message_type: str = "info"):
@@ -47,6 +47,8 @@ class PanelCallbackHandler:
             formatted_message = f"📊 **Progress** [{timestamp}]\n{message}"
         elif message_type == "search":
             formatted_message = f"🔍 **{user}** [{timestamp}]\n{message}"
+        elif message_type == "business_insight":
+            formatted_message = f"💡 **{user}** [{timestamp}]\n{message}"
         else:
             formatted_message = f"📝 **{user}** [{timestamp}]\n{message}"
             
@@ -58,132 +60,141 @@ class PanelCallbackHandler:
             print(f"[{user}] {message}")  # Fallback
     
     def on_agent_start(self, agent_name: str, task_description: str):
-        """Called when an agent starts working on a task"""
+        """Called when an agent starts working on a business toolkit task"""
         self.active_agent = agent_name
         self.task_count += 1
         
         # Format task description nicely
         clean_description = task_description[:200] + "..." if len(task_description) > 200 else task_description
-        message = f"Starting work on: {clean_description}"
+        message = f"Starting business analysis: {clean_description}"
         self.send_message(message, user=agent_name, message_type="agent_start")
         
         # Send progress update
-        progress_msg = f"Task {self.task_count} of 4: {agent_name} is working..."
+        progress_msg = f"Business Component {self.task_count} of 4: {agent_name} is analyzing market data..."
         self.send_message(progress_msg, user="System", message_type="progress")
     
     def on_agent_thinking(self, agent_name: str, thought: str):
-        """Called when an agent is thinking/reasoning"""
+        """Called when an agent is analyzing business data"""
         # Only show brief thinking messages to avoid spam
         clean_thought = thought[:150] + "..." if len(thought) > 150 else thought
-        message = f"Analyzing: {clean_thought}"
+        message = f"Business Analysis: {clean_thought}"
         self.send_message(message, user=agent_name, message_type="agent_thinking")
     
     def on_tool_use(self, agent_name: str, tool_name: str, tool_input: str, tool_output: str):
-        """Called when an agent uses a tool - Updated for custom search tool"""
-        # Handle our custom SerperDevTool
+        """Called when an agent uses a tool - Updated for business toolkit research"""
+        # Handle our custom SerperDevTool for business research
         if tool_name in ["SerperDevTool", "CustomSerperTool"]:
-            # Format search results nicely
+            # Format search results nicely for business context
             clean_input = tool_input[:100] + "..." if len(tool_input) > 100 else tool_input
             
             # Check if we got results
             if "Search Results" in tool_output or "=== " in tool_output:
                 # Count results for better feedback
                 result_count = tool_output.count("**") // 2  # Approximate result count
-                message = f"🔍 Searching for: {clean_input}\n📋 Found {result_count} relevant sources about sustainability regulations and market trends"
+                message = f"🔍 Market Research: {clean_input}\n📊 Found {result_count} business intelligence sources and industry insights"
             elif "Error:" in tool_output:
-                message = f"🔍 Search attempted: {clean_input}\n⚠️ Search encountered an issue, using fallback information"
+                message = f"🔍 Research attempted: {clean_input}\n⚠️ Using cached business intelligence and industry knowledge"
             else:
-                message = f"🔍 Researching: {clean_input}\n📋 Gathering current market information and regulatory updates"
+                message = f"🔍 Business Intelligence: {clean_input}\n📊 Gathering current market data and competitive insights"
             
             self.send_message(message, user=agent_name, message_type="search")
         else:
             # Other tools
             clean_input = tool_input[:100] + "..." if len(tool_input) > 100 else tool_input
             clean_output = tool_output[:200] + "..." if len(tool_output) > 200 else tool_output
-            message = f"Using {tool_name}\n🔍 Input: {clean_input}\n📋 Result: {clean_output}"
+            message = f"Using {tool_name}\n🔍 Input: {clean_input}\n📋 Business Data: {clean_output}"
             self.send_message(message, user=agent_name, message_type="tool_use")
     
     def on_task_complete(self, agent_name: str, task_output: str):
-        """Called when a task is completed"""
+        """Called when a business toolkit task is completed"""
         self.completed_tasks += 1
         
         # Show brief completion message
-        message = f"Task completed successfully! ✨\n📊 Progress: {self.completed_tasks}/4 tasks finished"
+        message = f"Business component delivered successfully! ✨\n📊 Progress: {self.completed_tasks}/4 business components completed"
         self.send_message(message, user=agent_name, message_type="task_complete")
         
-        # Show task summary based on agent
+        # Show business-focused task summary based on agent
         if "scenario" in agent_name.lower():
-            summary = "✅ Business scenario created with realistic context and regulatory requirements"
+            summary = "✅ Business scenario analysis completed with market context and regulatory framework"
         elif "mistake" in agent_name.lower():
-            summary = "✅ Problematic messaging examples identified with detailed compliance analysis"
+            summary = "✅ Compliance risk analysis completed with real-world violation examples and business impact"
         elif "practice" in agent_name.lower():
-            summary = "✅ Best practice corrections provided with regulatory guidance"
-        elif "assessment" in agent_name.lower():
-            summary = "✅ Business toolkit generated with templates, guides, and market intelligence"
+            summary = "✅ Best practice implementation strategies delivered with proven market solutions"
+        elif "assessment" in agent_name.lower() or "toolkit" in agent_name.lower():
+            summary = "✅ Comprehensive business toolkit generated with templates, guides, and operational resources"
         else:
-            summary = "✅ Analysis completed successfully"
+            summary = "✅ Business analysis component completed successfully"
             
-        self.send_message(summary, user="System", message_type="info")
+        self.send_message(summary, user="System", message_type="business_insight")
     
     def on_error(self, agent_name: str, error_message: str):
-        """Called when an error occurs"""
+        """Called when an error occurs during business toolkit generation"""
         clean_error = error_message[:300] + "..." if len(error_message) > 300 else error_message
-        message = f"⚠️ Issue encountered: {clean_error}"
+        message = f"⚠️ Business analysis issue: {clean_error}"
         self.send_message(message, user=agent_name, message_type="error")
     
     def on_session_start(self, session_info: Dict[str, Any]):
-        """Called when a training session starts"""
+        """Called when a business toolkit generation session starts"""
         self.session_id = session_info.get('session_id', 'Unknown')
         self.task_count = 0
         self.completed_tasks = 0
         
-        message = f"""🌱 **Sustainability Business Toolkit Generation Started**
+        message = f"""🛠️ **Business Toolkit Generation Initiated**
 
 **Session ID:** {self.session_id}
-**Industry Focus:** {session_info.get('user_industry', 'N/A')}
-**Regulatory Framework:** {session_info.get('regional_regulations', 'N/A')}
-**Difficulty Level:** {session_info.get('difficulty_level', 'N/A')}
+**Industry Focus:** {session_info.get('user_industry', 'Multi-Industry')}
+**Regulatory Framework:** {session_info.get('regional_regulations', 'Global Best Practices')}
+**Business Scope:** {session_info.get('difficulty_level', 'Professional')}
 
-**Toolkit Creation Plan:**
-1. 🏢 Create realistic business scenario
-2. ⚠️ Identify problematic messaging patterns  
-3. ✅ Develop compliant alternatives
-4. 🛠️ Generate business toolkit and templates
+**Business Toolkit Components:**
+1. 🏢 Market scenario analysis and competitive context
+2. ⚠️ Compliance risk assessment with real violation cases  
+3. ✅ Implementation strategies with proven market solutions
+4. 🛠️ Operational toolkit with templates and resources
 
-**What You'll Get:**
-- 🔍 Quick reference tools and checklists
-- 📊 Current market intelligence reports
-- 📧 Ready-to-use communication templates  
+**Business Value Delivered:**
+- 🔍 Quick reference tools for daily marketing operations
+- 📊 Market intelligence and competitive analysis  
+- 📧 Communication templates for business processes  
 - 👥 Role-specific implementation guides
+- ⚖️ Compliance frameworks and risk mitigation tools
 
-Please wait while our AI agents work together to create your personalized business toolkit..."""
+Our business intelligence agents are now researching current market conditions, regulatory requirements, and industry best practices to create your comprehensive toolkit..."""
         
         self.send_message(message, user="System", message_type="session")
     
     def on_session_complete(self, results: Any):
-        """Called when the entire training session is complete"""
+        """Called when the business toolkit generation is complete"""
         message = f"""🎉 **Business Toolkit Generation Completed Successfully!**
 
-📊 **Session Summary:**
-- ✅ All 4 toolkit modules completed
-- 🛠️ Business toolkit generated
-- 🎯 Personalized implementation guidance provided
-- 📧 Communication templates and guides created
+📊 **Business Toolkit Summary:**
+- ✅ All 4 business components delivered
+- 🛠️ Comprehensive operational toolkit generated
+- 🎯 Implementation guidance and templates provided
+- 📧 Business communication workflows created
 
-**Your Toolkit Includes:**
-- 🔍 Quick reference tools for daily use
-- 📊 Market intelligence and trend analysis
-- 📧 Communication templates for legal, vendors, and internal teams
-- 👥 Role-specific guides for marketing professionals
+**Your Business Toolkit Includes:**
+- 🔍 Daily-use compliance and safety tools
+- 📊 Market intelligence and competitive insights
+- 📧 Professional communication templates
+- 👥 Role-specific implementation guides for marketing teams
+- ⚖️ Risk assessment and compliance frameworks
 
-**Next Steps:**
-1. Download your comprehensive business toolkit using the buttons
-2. Review the quick reference tools for immediate implementation
-3. Use the communication templates with your team
-4. Follow the role-specific guides for daily operations
-5. Check the sources section for additional research
+**Immediate Business Value:**
+1. Download your comprehensive business toolkit using the export options
+2. Implement the quick reference tools for immediate compliance improvement
+3. Use communication templates with your legal and marketing teams
+4. Follow role-specific guides for daily marketing operations
+5. Reference market intelligence for competitive positioning
 
-Thank you for using our AI-powered sustainability toolkit generator! 🌱"""
+**Next Steps for Business Implementation:**
+- Review compliance tools and integrate into daily workflows
+- Train marketing team using role-specific guides
+- Implement communication templates in business processes
+- Use market intelligence for strategic planning
+- Establish ongoing compliance monitoring using provided frameworks
+
+Your business toolkit is ready for immediate implementation! 🚀"""
         
         self.send_message(message, user="System", message_type="task_complete")
 
@@ -191,28 +202,28 @@ Thank you for using our AI-powered sustainability toolkit generator! 🌱"""
 panel_callback_handler = PanelCallbackHandler()
 
 def print_task_output(task_output: TaskOutput) -> TaskOutput:
-    """Callback function for CrewAI tasks"""
+    """Callback function for CrewAI tasks - Business toolkit focused"""
     if task_output.agent and panel_callback_handler.chat_interface:
         agent_name = task_output.agent
         
-        # Try to extract meaningful output information
+        # Try to extract meaningful business output information
         if hasattr(task_output, 'pydantic') and task_output.pydantic:
-            # For structured Pydantic outputs, show a summary
+            # For structured Pydantic outputs, show business-focused summary
             try:
                 data = task_output.pydantic.model_dump()
                 if 'company_name' in data:
-                    # Scenario task
-                    output_summary = f"Business scenario created for {data.get('company_name', 'company')} in {data.get('industry', 'target industry')}"
+                    # Business scenario task
+                    output_summary = f"Market scenario created for {data.get('company_name', 'target company')} in {data.get('industry', 'focus industry')}"
                 elif 'problematic_messages' in data:
-                    # Mistake analysis task
+                    # Compliance risk analysis task
                     msg_count = len(data.get('problematic_messages', []))
-                    output_summary = f"Identified {msg_count} problematic messaging examples with regulatory analysis"
+                    output_summary = f"Compliance analysis completed: {msg_count} risk patterns identified with business impact assessment"
                 elif 'corrected_messages' in data:
-                    # Best practices task
+                    # Business implementation strategy task
                     correction_count = len(data.get('corrected_messages', []))
-                    output_summary = f"Provided {correction_count} corrected messages with compliance guidance"
+                    output_summary = f"Implementation strategies delivered: {correction_count} proven solutions with market examples"
                 elif 'quick_reference_tools' in data or 'communication_templates' in data:
-                    # NEW: Toolkit task
+                    # Business toolkit task
                     toolkit_counts = {
                         'quick_reference_tools': len(data.get('quick_reference_tools', [])),
                         'market_intelligence': len(data.get('market_intelligence', [])),
@@ -220,18 +231,14 @@ def print_task_output(task_output: TaskOutput) -> TaskOutput:
                         'role_specific_guides': len(data.get('role_specific_guides', []))
                     }
                     total_items = sum(toolkit_counts.values())
-                    output_summary = f"Generated comprehensive business toolkit with {total_items} tools and templates"
-                elif 'assessment_questions' in data:
-                    # Legacy assessment task (should not happen anymore)
-                    question_count = len(data.get('assessment_questions', []))
-                    output_summary = f"Generated comprehensive report with {question_count} assessment questions"
+                    output_summary = f"Comprehensive business toolkit delivered: {total_items} operational tools and templates ready for implementation"
                 else:
-                    output_summary = "Task completed with structured output"
+                    output_summary = "Business component completed with structured deliverables"
                     
             except Exception:
-                output_summary = "Task completed successfully"
+                output_summary = "Business task completed successfully"
         else:
-            # For text outputs, show a brief summary
+            # For text outputs, show a brief business-focused summary
             output_text = str(task_output.raw)
             output_summary = output_text[:200] + "..." if len(output_text) > 200 else output_text
         

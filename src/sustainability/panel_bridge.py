@@ -36,7 +36,8 @@ app = FastAPI(
 # CORS middleware for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://*.vercel.app", "https://*.netlify.app"],
+    allow_origins=["http://localhost:3000",
+        "https://*.vercel.app", "https://*.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,23 +45,31 @@ app.add_middleware(
 
 # ===== DATA MODELS ===== #
 
+
 class TrainingRequest(BaseModel):
     """Request model for training session"""
     industry: str = Field(..., description="Target industry focus")
     regulations: str = Field(..., description="Regulatory framework")
-    difficulty: str = Field(default="Intermediate", description="Training difficulty level")
-    user_profile: Optional[Dict[str, Any]] = Field(default=None, description="Optional user profile data")
+    difficulty: str = Field(default="Intermediate",
+                            description="Training difficulty level")
+    user_profile: Optional[Dict[str, Any]] = Field(
+        default=None, description="Optional user profile data")
+
 
 class TrainingSession(BaseModel):
     """Training session data model"""
     session_id: str = Field(..., description="Unique session identifier")
-    status: str = Field(..., description="Session status: pending, running, completed, error")
-    progress: float = Field(default=0.0, description="Completion percentage 0-100")
-    current_agent: Optional[str] = Field(default=None, description="Currently active agent")
+    status: str = Field(...,
+                        description="Session status: pending, running, completed, error")
+    progress: float = Field(
+        default=0.0, description="Completion percentage 0-100")
+    current_agent: Optional[str] = Field(
+        default=None, description="Currently active agent")
     created_at: datetime = Field(default_factory=datetime.now)
     completed_at: Optional[datetime] = Field(default=None)
     error_message: Optional[str] = Field(default=None)
     results: Optional[Dict[str, Any]] = Field(default=None)
+
 
 class AgentUpdate(BaseModel):
     """Real-time agent update model"""
@@ -71,47 +80,52 @@ class AgentUpdate(BaseModel):
     message_type: str = Field(default="info")  # info, progress, success, error
     progress: Optional[float] = Field(default=None)
 
+
 class ReportRequest(BaseModel):
     """Report generation request"""
     session_id: str
-    format: str = Field(default="markdown", description="Output format: markdown, json, pdf")
-    include_sources: bool = Field(default=True, description="Include source citations")
-    business_focus: bool = Field(default=True, description="Focus on business-relevant content")
+    format: str = Field(default="markdown",
+                        description="Output format: markdown, json, pdf")
+    include_sources: bool = Field(
+        default=True, description="Include source citations")
+    business_focus: bool = Field(
+        default=True, description="Focus on business-relevant content")
 
 # ===== GLOBAL STATE MANAGEMENT ===== #
 
+
 class SessionManager:
     """Manages training sessions and real-time updates"""
-    
+
     def __init__(self):
         self.sessions: Dict[str, TrainingSession] = {}
         self.websocket_connections: Dict[str, List[WebSocket]] = {}
         self.update_queue: Queue = Queue()
-        
+
     def create_session(self, request: TrainingRequest) -> TrainingSession:
         """Create new training session"""
         session_id = f"train_{uuid.uuid4().hex[:8]}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
+
         session = TrainingSession(
             session_id=session_id,
             status="pending"
         )
-        
+
         self.sessions[session_id] = session
         logger.info(f"Created session: {session_id}")
         return session
-    
+
     def update_session(self, session_id: str, **updates):
         """Update session data"""
         if session_id in self.sessions:
             for key, value in updates.items():
                 if hasattr(self.sessions[session_id], key):
                     setattr(self.sessions[session_id], key, value)
-    
+
     def get_session(self, session_id: str) -> Optional[TrainingSession]:
         """Get session by ID"""
         return self.sessions.get(session_id)
-    
+
     async def broadcast_update(self, session_id: str, update: AgentUpdate):
         """Broadcast update to all connected WebSocket clients"""
         if session_id in self.websocket_connections:
@@ -122,17 +136,17 @@ class SessionManager:
                 except Exception as e:
                     logger.warning(f"WebSocket send failed: {e}")
                     disconnected.append(websocket)
-            
+
             # Remove disconnected clients
             for ws in disconnected:
                 self.websocket_connections[session_id].remove(ws)
-    
+
     def add_websocket(self, session_id: str, websocket: WebSocket):
         """Add WebSocket connection for session"""
         if session_id not in self.websocket_connections:
             self.websocket_connections[session_id] = []
         self.websocket_connections[session_id].append(websocket)
-    
+
     def remove_websocket(self, session_id: str, websocket: WebSocket):
         """Remove WebSocket connection"""
         if session_id in self.websocket_connections:
@@ -141,22 +155,25 @@ class SessionManager:
             except ValueError:
                 pass
 
+
 # Global session manager instance
 session_manager = SessionManager()
 
 # ===== TRAINING ORCHESTRATION ===== #
 
+
 class TrainingOrchestrator:
     """Orchestrates the AI training process with real-time updates"""
-    
+
     @staticmethod
     async def run_training_session(session_id: str, request: TrainingRequest):
         """Run complete training session with real-time updates"""
-        
+
         try:
             # Update session status
-            session_manager.update_session(session_id, status="running", progress=5.0)
-            
+            session_manager.update_session(
+                session_id, status="running", progress=5.0)
+
             # Send start notification
             await session_manager.broadcast_update(session_id, AgentUpdate(
                 session_id=session_id,
@@ -165,7 +182,7 @@ class TrainingOrchestrator:
                 message_type="info",
                 progress=5.0
             ))
-            
+
             # Prepare training inputs
             training_inputs = {
                 'user_industry': request.industry,
@@ -176,34 +193,36 @@ class TrainingOrchestrator:
                 'business_focus': True,  # New: Focus on business-relevant content
                 'report_format': 'toolkit'  # New: Toolkit-optimized format
             }
-            
+
             # Import and run CrewAI system
             from sustainability.crew import Sustainability
             from sustainability.callbacks import get_panel_callback_handler
-            
+
             # Set up callback handler for real-time updates
             callback_handler = get_panel_callback_handler()
             callback_handler.session_id = session_id
             callback_handler.websocket_broadcast = lambda update: asyncio.create_task(
                 session_manager.broadcast_update(session_id, update)
             )
-            
-            # Progress tracking through agents
+
+
+            # REPLACE WITH:
             agent_progress = {
-                "scenario_builder": 25.0,
-                "mistake_illustrator": 50.0, 
-                "best_practice_coach": 75.0,
-                "assessment_agent": 100.0
-            }
-            
+              "scenario_builder": 25.0,
+              "mistake_illustrator": 50.0,
+              "best_practice_coach": 75.0,
+              "business_toolkit_creator": 100.0
+              }
+
             # Run the training crew
             logger.info(f"Starting CrewAI training for session {session_id}")
             sustainability_crew = Sustainability()
             result = sustainability_crew.crew().kickoff(inputs=training_inputs)
-            
+
             # Process results for toolkit format
-            processed_results = TrainingOrchestrator._process_results_for_toolkit(result)
-            
+            processed_results = TrainingOrchestrator._process_results_for_toolkit(
+                result)
+
             # Update session with results
             session_manager.update_session(
                 session_id,
@@ -212,7 +231,7 @@ class TrainingOrchestrator:
                 completed_at=datetime.now(),
                 results=processed_results
             )
-            
+
             # Send completion notification
             await session_manager.broadcast_update(session_id, AgentUpdate(
                 session_id=session_id,
@@ -221,9 +240,10 @@ class TrainingOrchestrator:
                 message_type="success",
                 progress=100.0
             ))
-            
-            logger.info(f"Training session {session_id} completed successfully")
-            
+
+            logger.info(
+                f"Training session {session_id} completed successfully")
+
         except Exception as e:
             error_message = f"Training failed: {str(e)}"
             logger.error(f"Session {session_id} error: {error_message}")
