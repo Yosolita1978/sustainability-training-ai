@@ -1,3 +1,6 @@
+# Complete src/sustainability/config/tasks.yaml
+# Updated with toolkit components instead of assessment questions
+
 scenario_creation_task:
   description: >
     Create a realistic business scenario for sustainability messaging training based on the user's

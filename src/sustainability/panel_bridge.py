@@ -1,1588 +1,912 @@
 #!/usr/bin/env python
 """
-Sustainability Training Panel Web Application - Enhanced with Modern CSS
+Sustainability Training API Toolkit - Backend Services
+Replaces Panel interface with REST API endpoints for Next.js frontend
 """
 
-import panel as pn
-import param
+from fastapi import FastAPI, WebSocket, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, FileResponse
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any, List
 import asyncio
-import threading
-import traceback
-import base64
 import json
-from datetime import datetime
-from typing import Optional, Dict, Any
+import uuid
 import os
-
-# Minimal Panel configuration for web deployment
-pn.extension()
-
-# Modern CSS Styling
-MODERN_CSS = """
-<style>
-/* ===== DESIGN SYSTEM VARIABLES ===== */
-:root {
-  /* Colors - Modern Green Tech Theme */
-  --primary-color: #10b981;
-  --primary-dark: #059669;
-  --primary-light: #34d399;
-  --secondary-color: #3b82f6;
-  --accent-color: #8b5cf6;
-  
-  /* Neutrals */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #e2e8f0;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --border-color: #e2e8f0;
-  --border-hover: #cbd5e1;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
-  /* Spacing */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-2xl: 3rem;
-  
-  /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  
-  /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
-}
-
-/* ===== GLOBAL RESET & BASE STYLES ===== */
-* {
-  box-sizing: border-box;
-}
-
-body {
-  font-family: var(--font-sans);
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  color: var(--text-primary);
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
-}
-
-/* ===== MAIN LAYOUT CONTAINER ===== */
-.bk-root {
-  background: transparent !important;
-}
-
-/* Panel Row - Main Layout */
-.bk-Row {
-  background: transparent;
-  gap: var(--space-lg);
-  padding: var(--space-lg);
-  min-height: 100vh;
-}
-
-/* ===== SIDEBAR STYLING ===== */
-.bk-Column:first-child {
-  background: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-xl);
-  border: 1px solid var(--border-color);
-  position: sticky;
-  top: var(--space-lg);
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-}
-
-/* Sidebar Headers */
-.bk-Column:first-child .bk-Markdown h2 {
-  color: var(--primary-color);
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 var(--space-lg) 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.bk-Column:first-child .bk-Markdown h2:before {
-  content: "⚙️";
-  font-size: 1.1em;
-}
-
-/* ===== MAIN CONTENT AREA ===== */
-.bk-Column:last-child {
-  background: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  flex: 1;
-  min-height: 600px;
-}
-
-/* ===== FORM CONTROLS STYLING ===== */
-/* Select Widgets */
-.bk-input-group {
-  margin-bottom: var(--space-lg);
-}
-
-.bk-input-group label {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: var(--space-sm);
-  display: block;
-  font-size: 0.95rem;
-}
-
-select.bk-input {
-  width: 100%;
-  padding: var(--space-md);
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-  background-position: right var(--space-md) center;
-  background-repeat: no-repeat;
-  background-size: 1em;
-  padding-right: 2.5rem;
-}
-
-select.bk-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgb(16 185 129 / 0.1);
-}
-
-select.bk-input:hover {
-  border-color: var(--border-hover);
-}
-
-/* ===== BUTTON STYLING ===== */
-.bk-btn {
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-lg);
-  font-size: 0.95rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  text-decoration: none;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Primary Button (Start Training) */
-.bk-btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: white;
-  box-shadow: var(--shadow-md);
-  font-size: 1.1rem;
-  padding: var(--space-lg) var(--space-xl);
-  font-weight: 700;
-}
-
-.bk-btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, var(--primary-dark), #047857);
-}
-
-.bk-btn-primary:active {
-  transform: translateY(0);
-}
-
-.bk-btn-primary:disabled {
-  background: linear-gradient(135deg, #9ca3af, #6b7280);
-  cursor: not-allowed;
-  transform: none;
-  opacity: 0.7;
-}
-
-/* Default Buttons */
-.bk-btn-default {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 2px solid var(--border-color);
-}
-
-.bk-btn-default:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-  border-color: var(--border-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.bk-btn-default:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Button Loading State */
-.bk-btn-primary:disabled:after {
-  content: "";
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  margin: auto;
-  border: 2px solid transparent;
-  border-top-color: white;
-  border-radius: 50%;
-  animation: button-loading-spinner 1s ease infinite;
-  left: var(--space-lg);
-}
-
-@keyframes button-loading-spinner {
-  from { transform: rotate(0turn); }
-  to { transform: rotate(1turn); }
-}
-
-/* ===== DIVIDER STYLING ===== */
-.bk-Divider {
-  border-color: var(--border-color);
-  margin: var(--space-xl) 0;
-  opacity: 0.6;
-}
-
-/* ===== CHAT INTERFACE STYLING ===== */
-.chat-interface {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Chat Header */
-.bk-ChatInterface .bk-header {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: white;
-  padding: var(--space-lg);
-  font-weight: 700;
-  font-size: 1.1rem;
-  border-bottom: none;
-}
-
-/* Chat Messages Area */
-.bk-ChatInterface .bk-chat-feed {
-  background: var(--bg-secondary);
-  padding: var(--space-lg);
-  flex: 1;
-  overflow-y: auto;
-}
-
-/* Individual Chat Messages */
-.bk-ChatMessage {
-  margin-bottom: var(--space-lg);
-  animation: message-slide-in 0.3s ease-out;
-}
-
-@keyframes message-slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Chat Message Content */
-.bk-ChatMessage .bk-msg-content {
-  background: white;
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  position: relative;
-}
-
-/* System Messages */
-.bk-ChatMessage[data-user="System"] .bk-msg-content,
-.bk-ChatMessage[data-user="Results"] .bk-msg-content,
-.bk-ChatMessage[data-user="PDF Help"] .bk-msg-content {
-  background: linear-gradient(135deg, #ddd6fe, #e0e7ff);
-  border-left: 4px solid var(--accent-color);
-}
-
-/* Agent Messages */
-.bk-ChatMessage[data-user*="Agent"] .bk-msg-content {
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  border-left: 4px solid var(--primary-color);
-}
-
-/* Download Messages */
-.bk-ChatMessage[data-user="Download"] .bk-msg-content {
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  border-left: 4px solid #f59e0b;
-}
-
-/* Chat Input Area */
-.bk-ChatInterface .bk-input-group {
-  background: white;
-  border-top: 1px solid var(--border-color);
-  padding: var(--space-lg);
-}
-
-/* ===== MARKDOWN CONTENT STYLING ===== */
-.bk-Markdown {
-  line-height: 1.7;
-}
-
-.bk-Markdown h1 {
-  color: var(--primary-color);
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: var(--space-lg);
-  line-height: 1.2;
-}
-
-.bk-Markdown h2 {
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: var(--space-xl) 0 var(--space-lg) 0;
-  line-height: 1.3;
-}
-
-.bk-Markdown h3 {
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: var(--space-lg) 0 var(--space-md) 0;
-}
-
-.bk-Markdown p {
-  color: var(--text-secondary);
-  margin-bottom: var(--space-md);
-  font-size: 1rem;
-}
-
-.bk-Markdown ul, .bk-Markdown ol {
-  color: var(--text-secondary);
-  padding-left: var(--space-xl);
-  margin-bottom: var(--space-md);
-}
-
-.bk-Markdown li {
-  margin-bottom: var(--space-sm);
-}
-
-.bk-Markdown code {
-  background: var(--bg-tertiary);
-  padding: 0.2em 0.4em;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-  color: var(--accent-color);
-}
-
-.bk-Markdown strong {
-  color: var(--text-primary);
-  font-weight: 700;
-}
-
-/* ===== PROGRESS INDICATORS ===== */
-.progress-indicator {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: var(--space-lg);
-  margin: var(--space-lg) 0;
-  border: 1px solid var(--border-color);
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-  overflow: hidden;
-  margin: var(--space-md) 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
-  border-radius: 4px;
-  transition: width 0.3s ease;
-  animation: progress-shimmer 2s infinite;
-}
-
-@keyframes progress-shimmer {
-  0% { background-position: -200px 0; }
-  100% { background-position: calc(200px + 100%) 0; }
-}
-
-/* ===== MOBILE RESPONSIVENESS ===== */
-@media (max-width: 768px) {
-  .bk-Row {
-    flex-direction: column;
-    padding: var(--space-md);
-    gap: var(--space-md);
-  }
-  
-  .bk-Column:first-child {
-    position: static;
-    max-height: none;
-    order: 2;
-    margin-top: var(--space-md);
-  }
-  
-  .bk-Column:last-child {
-    order: 1;
-    min-height: 400px;
-  }
-  
-  /* Stack form controls */
-  .bk-input-group {
-    margin-bottom: var(--space-md);
-  }
-  
-  /* Larger touch targets */
-  .bk-btn {
-    min-height: 48px;
-    font-size: 1rem;
-  }
-  
-  select.bk-input {
-    min-height: 48px;
-    font-size: 16px; /* Prevents zoom on iOS */
-  }
-  
-  /* Chat interface mobile optimization */
-  .bk-ChatInterface .bk-chat-feed {
-    padding: var(--space-md);
-  }
-  
-  .bk-ChatMessage .bk-msg-content {
-    padding: var(--space-md);
-  }
-}
-
-@media (max-width: 480px) {
-  .bk-Row {
-    padding: var(--space-sm);
-  }
-  
-  .bk-Column:first-child,
-  .bk-Column:last-child {
-    border-radius: var(--radius-md);
-    padding: var(--space-lg);
-  }
-  
-  .bk-Markdown h1 {
-    font-size: 1.75rem;
-  }
-  
-  .bk-Markdown h2 {
-    font-size: 1.25rem;
-  }
-}
-
-/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
-.bk-btn:focus,
-select.bk-input:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ===== HIGH CONTRAST MODE ===== */
-@media (prefers-contrast: high) {
-  :root {
-    --border-color: #000000;
-    --border-hover: #333333;
-    --text-secondary: #000000;
-  }
-}
-
-/* ===== DOWNLOAD WIDGET ENHANCEMENTS ===== */
-.download-widget {
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  margin: var(--space-lg) 0;
-}
-
-.download-widget button {
-  background: linear-gradient(135deg, #059669, #047857);
-  color: white;
-  border: none;
-  padding: var(--space-lg) var(--space-xl);
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.download-widget button:hover {
-  background: linear-gradient(135deg, #047857, #065f46);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-/* ===== SCROLLBAR STYLING ===== */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-/* ===== LOADING STATES ===== */
-.loading-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite;
-}
-
-@keyframes loading-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* ===== ENHANCED VISUAL FEEDBACK ===== */
-.success-state {
-  border-left: 4px solid #10b981;
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-}
-
-.warning-state {
-  border-left: 4px solid #f59e0b;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-}
-
-.error-state {
-  border-left: 4px solid #ef4444;
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
-}
-
-.info-state {
-  border-left: 4px solid #3b82f6;
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-}
-
-/* ===== PRINT STYLES ===== */
-@media print {
-  .bk-Column:first-child {
-    display: none;
-  }
-  
-  .bk-Row {
-    flex-direction: column;
-  }
-  
-  .bk-ChatInterface {
-    box-shadow: none;
-    border: 1px solid #ccc;
-  }
-}
-</style>
-"""
-
-class SustainabilityPanelApp(param.Parameterized):
-    """
-    Panel-based web interface for the Sustainability Training System - Enhanced Design
-    """
+from datetime import datetime
+import traceback
+from pathlib import Path
+
+# Background task management
+import threading
+from queue import Queue
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Sustainability Training API",
+    description="AI-powered sustainability messaging training toolkit",
+    version="2.0.0"
+)
+
+# CORS middleware for Next.js frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "https://*.vercel.app", "https://*.netlify.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ===== DATA MODELS ===== #
+
+class TrainingRequest(BaseModel):
+    """Request model for training session"""
+    industry: str = Field(..., description="Target industry focus")
+    regulations: str = Field(..., description="Regulatory framework")
+    difficulty: str = Field(default="Intermediate", description="Training difficulty level")
+    user_profile: Optional[Dict[str, Any]] = Field(default=None, description="Optional user profile data")
+
+class TrainingSession(BaseModel):
+    """Training session data model"""
+    session_id: str = Field(..., description="Unique session identifier")
+    status: str = Field(..., description="Session status: pending, running, completed, error")
+    progress: float = Field(default=0.0, description="Completion percentage 0-100")
+    current_agent: Optional[str] = Field(default=None, description="Currently active agent")
+    created_at: datetime = Field(default_factory=datetime.now)
+    completed_at: Optional[datetime] = Field(default=None)
+    error_message: Optional[str] = Field(default=None)
+    results: Optional[Dict[str, Any]] = Field(default=None)
+
+class AgentUpdate(BaseModel):
+    """Real-time agent update model"""
+    session_id: str
+    agent_name: str
+    message: str
+    timestamp: datetime = Field(default_factory=datetime.now)
+    message_type: str = Field(default="info")  # info, progress, success, error
+    progress: Optional[float] = Field(default=None)
+
+class ReportRequest(BaseModel):
+    """Report generation request"""
+    session_id: str
+    format: str = Field(default="markdown", description="Output format: markdown, json, pdf")
+    include_sources: bool = Field(default=True, description="Include source citations")
+    business_focus: bool = Field(default=True, description="Focus on business-relevant content")
+
+# ===== GLOBAL STATE MANAGEMENT ===== #
+
+class SessionManager:
+    """Manages training sessions and real-time updates"""
     
     def __init__(self):
-        super().__init__()
+        self.sessions: Dict[str, TrainingSession] = {}
+        self.websocket_connections: Dict[str, List[WebSocket]] = {}
+        self.update_queue: Queue = Queue()
         
-        # Web environment detection
-        self.is_web_env = self.is_web_environment()
+    def create_session(self, request: TrainingRequest) -> TrainingSession:
+        """Create new training session"""
+        session_id = f"train_{uuid.uuid4().hex[:8]}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
-        # Configure Panel for deployment environment
-        if self.is_web_env:
-            pn.config.autoreload = False
-        else:
-            pn.config.autoreload = True
+        session = TrainingSession(
+            session_id=session_id,
+            status="pending"
+        )
         
-        # Initialize components
-        self.setup_chat_interface()
-        self.setup_controls()
-        self.setup_layout()
-        
-        # Training state
-        self.latest_results = None
-        self.is_training_active = False
-        self.current_thread = None
-        
-        # Register callback handler
-        from .callbacks import get_panel_callback_handler
-        self.callback_handler = get_panel_callback_handler()
-        self.callback_handler.register_chat_interface(self.chat_interface)
+        self.sessions[session_id] = session
+        logger.info(f"Created session: {session_id}")
+        return session
     
-    def is_web_environment(self):
-        """Detect if running in web deployment vs local development"""
-        return bool(os.environ.get('PORT'))
+    def update_session(self, session_id: str, **updates):
+        """Update session data"""
+        if session_id in self.sessions:
+            for key, value in updates.items():
+                if hasattr(self.sessions[session_id], key):
+                    setattr(self.sessions[session_id], key, value)
     
-    def setup_chat_interface(self):
-        """Initialize the chat interface"""
-        self.chat_interface = pn.chat.ChatInterface(
-            callback=self.chat_callback,
-            callback_user="Assistant",
-            height=500,
-            sizing_mode="stretch_width",
-            header="🌱 Sustainability Training AI Assistant",
-            help_text="Your AI training session is in progress. Messages from the training agents will appear here.",
-            placeholder_text="Training messages will appear here...",
-            visible=False  # Hide initially
-        )
+    def get_session(self, session_id: str) -> Optional[TrainingSession]:
+        """Get session by ID"""
+        return self.sessions.get(session_id)
     
-    def setup_controls(self):
-        """Initialize control widgets"""
-        # User inputs
-        self.user_industry = pn.widgets.Select(
-            name="🏢 Industry Focus",
-            value="Marketing Agency",
-            options=[
-                "Marketing Agency", "Consumer Goods", "Fashion & Apparel", 
-                "Food & Beverage", "Technology", "Finance", "Healthcare",
-                "Energy", "Automotive", "Real Estate", "Other"
-            ],
-            sizing_mode="stretch_width"
-        )
-        
-        self.regional_regulations = pn.widgets.Select(
-            name="🌍 Regulatory Framework",
-            value="EU (Green Claims Directive, CSRD)",
-            options=[
-                "EU (Green Claims Directive, CSRD)",
-                "US (FTC Green Guides)",
-                "UK (CMA Guidelines)", 
-                "Canada (Competition Bureau)",
-                "Australia (ACCC Guidelines)",
-                "Global Best Practices"
-            ],
-            sizing_mode="stretch_width"
-        )
-        
-        self.difficulty_level = pn.widgets.Select(
-            name="📊 Difficulty Level",
-            value="Intermediate",
-            options=["Beginner", "Intermediate", "Advanced"],
-            sizing_mode="stretch_width"
-        )
-        
-        # Action buttons
-        self.start_button = pn.widgets.Button(
-            name="🚀 Start Training",
-            button_type="primary",
-            sizing_mode="stretch_width",
-            margin=(20, 5)
-        )
-        
-        self.download_md_button = pn.widgets.Button(
-            name="📄 Download Report (MD)",
-            button_type="default",
-            sizing_mode="stretch_width",
-            disabled=True
-        )
-        
-        self.download_pdf_button = pn.widgets.Button(
-            name="📑 PDF Instructions",
-            button_type="default", 
-            sizing_mode="stretch_width",
-            disabled=True
-        )
-        
-        self.reset_button = pn.widgets.Button(
-            name="🔄 Reset Session",
-            button_type="default",
-            sizing_mode="stretch_width"
-        )
-        
-        # Bind button events
-        self.start_button.on_click(self.start_training)
-        self.download_md_button.on_click(self.download_markdown_report)
-        self.download_pdf_button.on_click(self.download_pdf_report) 
-        self.reset_button.on_click(self.reset_session)
-    
-    def setup_layout(self):
-        """Create the main application layout"""
-        # Inject CSS styles first
-        css_pane = pn.pane.HTML(MODERN_CSS, width=0, height=0, margin=0)
-        
-        # Sidebar with controls
-        self.sidebar = pn.Column(
-            pn.pane.Markdown("## Training Configuration"),
-            self.user_industry,
-            self.regional_regulations, 
-            self.difficulty_level,
-            pn.layout.Divider(),
-            self.start_button,
-            pn.layout.Divider(),
-            pn.pane.Markdown("## Export Results"),
-            self.download_md_button,
-            self.download_pdf_button,
-            pn.layout.Divider(),
-            self.reset_button,
-            pn.Spacer(),
-            pn.pane.Markdown("""
-            ---
-            **Need Help?**
+    async def broadcast_update(self, session_id: str, update: AgentUpdate):
+        """Broadcast update to all connected WebSocket clients"""
+        if session_id in self.websocket_connections:
+            disconnected = []
+            for websocket in self.websocket_connections[session_id]:
+                try:
+                    await websocket.send_text(update.model_dump_json())
+                except Exception as e:
+                    logger.warning(f"WebSocket send failed: {e}")
+                    disconnected.append(websocket)
             
-            This AI trainer creates personalized sustainability messaging courses using:
-            - Real market research
-            - Current regulations  
-            - Industry best practices
-            - Interactive scenarios
-            
-            **Training includes:**
-            - Business scenarios
-            - Problem identification
-            - Compliant alternatives
-            - Knowledge assessment
-            """, sizing_mode="stretch_width"),
-            width=350,
-            sizing_mode="stretch_height"
-        )
-        
-        # Main content area
-        self.initial_instructions = pn.pane.Markdown("""
-        # 🌱 AI-Powered Sustainability Training
-        
-        **Get personalized training on compliant sustainability messaging**
-        
-        Our AI agents will research current market trends and regulations to create 
-        a customized training experience tailored to your industry and role.
-        
-        ## 🚀 How it works:
-        
-        1. **Configure** your training preferences on the left sidebar
-        2. **Click "Start Training"** to begin your personalized session
-        3. **Watch** as our AI agents work together to create your content:
-           - 🏢 Business scenario creation
-           - ⚠️ Problem identification  
-           - ✅ Best practice solutions
-           - 📝 Knowledge assessment
-        4. **Download** your comprehensive training report
-        
-        ## 🎯 What you'll learn:
-        
-        - **Regulatory compliance** - Stay up-to-date with current laws
-        - **Greenwashing avoidance** - Identify and fix problematic messaging
-        - **Best practices** - Learn from successful sustainability communications
-        - **Industry-specific guidance** - Tailored to your sector and role
-        
-        **Ready to begin?** Configure your preferences and click "Start Training"!
-        """, sizing_mode="stretch_both")
-        
-        self.main_content = pn.Column(
-            self.initial_instructions,
-            self.chat_interface,
-            sizing_mode="stretch_both"
-        )
-        
-        # Complete layout with CSS
-        self.layout = pn.Column(
-            css_pane,  # CSS injection
-            pn.Row(
-                self.sidebar,
-                self.main_content,
-                sizing_mode="stretch_width",
-                height=700
-            ),
-            sizing_mode="stretch_width"
-        )
+            # Remove disconnected clients
+            for ws in disconnected:
+                self.websocket_connections[session_id].remove(ws)
     
-    def chat_callback(self, contents: str, user: str, instance):
-        """Handle chat messages from user"""
-        # For now, just acknowledge user messages
-        if contents.strip():
-            response = "Thanks for your message! Use the training controls on the left to start your session."
-            return response
-        return None
+    def add_websocket(self, session_id: str, websocket: WebSocket):
+        """Add WebSocket connection for session"""
+        if session_id not in self.websocket_connections:
+            self.websocket_connections[session_id] = []
+        self.websocket_connections[session_id].append(websocket)
     
-    def start_training(self, event):
-        """Start the sustainability training process"""
-        if self.is_training_active:
-            self.chat_interface.send("⚠️ Training is already in progress. Please wait for it to complete.", user="System", respond=False)
-            return
-        
-        # Show chat interface and hide instructions
-        self.initial_instructions.visible = False
-        self.chat_interface.visible = True
-        
-        # Disable start button
-        self.start_button.disabled = True
-        self.start_button.name = "🔄 Training in Progress..."
-        self.is_training_active = True
-        
-        # Prepare training inputs
-        session_id = f"TRAIN_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        training_inputs = {
-            'user_industry': self.user_industry.value,
-            'regional_regulations': self.regional_regulations.value,
-            'difficulty_level': self.difficulty_level.value,
-            'current_year': str(datetime.now().year),
-            'session_id': session_id
-        }
-        
-        # Send session start notification
-        self.callback_handler.on_session_start({
-            'session_id': session_id,
-            'user_industry': self.user_industry.value,
-            'regional_regulations': self.regional_regulations.value,
-            'difficulty_level': self.difficulty_level.value
-        })
-        
-        # Start training in background thread
-        self.current_thread = threading.Thread(
-            target=self.run_training_crew,
-            args=(training_inputs,),
-            daemon=True
-        )
-        self.current_thread.start()
+    def remove_websocket(self, session_id: str, websocket: WebSocket):
+        """Remove WebSocket connection"""
+        if session_id in self.websocket_connections:
+            try:
+                self.websocket_connections[session_id].remove(websocket)
+            except ValueError:
+                pass
+
+# Global session manager instance
+session_manager = SessionManager()
+
+# ===== TRAINING ORCHESTRATION ===== #
+
+class TrainingOrchestrator:
+    """Orchestrates the AI training process with real-time updates"""
     
-    def run_training_crew(self, inputs: Dict[str, Any]):
-        """Run the CrewAI training process in background"""
+    @staticmethod
+    async def run_training_session(session_id: str, request: TrainingRequest):
+        """Run complete training session with real-time updates"""
+        
         try:
-            from .crew import Sustainability
+            # Update session status
+            session_manager.update_session(session_id, status="running", progress=5.0)
             
-            # Create and run the crew
+            # Send start notification
+            await session_manager.broadcast_update(session_id, AgentUpdate(
+                session_id=session_id,
+                agent_name="System",
+                message=f"🚀 Starting sustainability training session for {request.industry}",
+                message_type="info",
+                progress=5.0
+            ))
+            
+            # Prepare training inputs
+            training_inputs = {
+                'user_industry': request.industry,
+                'regional_regulations': request.regulations,
+                'difficulty_level': request.difficulty,
+                'current_year': str(datetime.now().year),
+                'session_id': session_id,
+                'business_focus': True,  # New: Focus on business-relevant content
+                'report_format': 'toolkit'  # New: Toolkit-optimized format
+            }
+            
+            # Import and run CrewAI system
+            from sustainability.crew import Sustainability
+            from sustainability.callbacks import get_panel_callback_handler
+            
+            # Set up callback handler for real-time updates
+            callback_handler = get_panel_callback_handler()
+            callback_handler.session_id = session_id
+            callback_handler.websocket_broadcast = lambda update: asyncio.create_task(
+                session_manager.broadcast_update(session_id, update)
+            )
+            
+            # Progress tracking through agents
+            agent_progress = {
+                "scenario_builder": 25.0,
+                "mistake_illustrator": 50.0, 
+                "best_practice_coach": 75.0,
+                "assessment_agent": 100.0
+            }
+            
+            # Run the training crew
+            logger.info(f"Starting CrewAI training for session {session_id}")
             sustainability_crew = Sustainability()
-            result = sustainability_crew.crew().kickoff(inputs=inputs)
+            result = sustainability_crew.crew().kickoff(inputs=training_inputs)
             
-            # Store results
-            self.latest_results = result
+            # Process results for toolkit format
+            processed_results = TrainingOrchestrator._process_results_for_toolkit(result)
             
-            # Schedule UI updates on main thread using simpler approach
-            import time
-            time.sleep(0.1)  # Small delay to ensure completion
-            self.on_training_complete(result)
-            
-        except Exception as e:
-            error_msg = f"Training failed: {str(e)}"
-            print(f"❌ Training error: {error_msg}")
-            print(f"Full traceback: {traceback.format_exc()}")
-            
-            # Schedule error handling on main thread
-            import time
-            time.sleep(0.1)  # Small delay
-            self.on_training_error(error_msg)
-    
-    def on_training_complete(self, result):
-        """Handle training completion"""
-        try:
-            # Reset button state
-            self.start_button.disabled = False
-            self.start_button.name = "🚀 Start Training"
-            self.is_training_active = False
-            
-            # Enable download buttons
-            self.download_md_button.disabled = False
-            self.download_pdf_button.disabled = False
+            # Update session with results
+            session_manager.update_session(
+                session_id,
+                status="completed",
+                progress=100.0,
+                completed_at=datetime.now(),
+                results=processed_results
+            )
             
             # Send completion notification
-            self.callback_handler.on_session_complete(result)
+            await session_manager.broadcast_update(session_id, AgentUpdate(
+                session_id=session_id,
+                agent_name="System",
+                message="✅ Training completed successfully! Results are ready for download.",
+                message_type="success",
+                progress=100.0
+            ))
             
-            # Show results summary
-            self.show_results_summary(result)
+            logger.info(f"Training session {session_id} completed successfully")
             
         except Exception as e:
-            print(f"Error in training completion: {e}")
-            self.on_training_error(f"Error processing results: {str(e)}")
+            error_message = f"Training failed: {str(e)}"
+            logger.error(f"Session {session_id} error: {error_message}")
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Update session with error
+            session_manager.update_session(
+                session_id,
+                status="error",
+                error_message=error_message,
+                completed_at=datetime.now()
+            )
+            
+            # Send error notification
+            await session_manager.broadcast_update(session_id, AgentUpdate(
+                session_id=session_id,
+                agent_name="System",
+                message=f"❌ Training error: {error_message}",
+                message_type="error"
+            ))
     
-    def on_training_error(self, error_msg: str):
-        """Handle training errors"""
-        # Reset button state
-        self.start_button.disabled = False
-        self.start_button.name = "🚀 Start Training"
-        self.is_training_active = False
+    @staticmethod
+    def _process_results_for_toolkit(result) -> Dict[str, Any]:
+        """Process CrewAI results for toolkit format - streamlined for business use"""
         
-        # Send error message
-        self.chat_interface.send(f"❌ **Training Error**\n{error_msg}\n\nPlease try again or contact support if the issue persists.", user="System", respond=False)
-    
-    def show_results_summary(self, result):
-        """Show a summary of training results"""
         try:
             if hasattr(result, 'tasks_output') and result.tasks_output:
                 final_task = result.tasks_output[-1]
                 if hasattr(final_task, 'pydantic') and final_task.pydantic:
-                    data = final_task.pydantic.model_dump()
+                    raw_data = final_task.pydantic.model_dump()
                     
-                    # Extract key metrics for toolkit
-                    scenario = data.get('scenario', {})
-                    
-                    # Count toolkit components
-                    toolkit_counts = {
-                        'quick_reference_tools': len(data.get('quick_reference_tools', [])),
-                        'market_intelligence': len(data.get('market_intelligence', [])),
-                        'communication_templates': len(data.get('communication_templates', [])),
-                        'role_specific_guides': len(data.get('role_specific_guides', []))
+                    # Extract and streamline for business toolkit
+                    toolkit_data = {
+                        "session_info": {
+                            "session_id": raw_data.get('session_id', 'unknown'),
+                            "generated_at": datetime.now().isoformat(),
+                            "version": "2.0"
+                        },
+                        "executive_summary": TrainingOrchestrator._create_executive_summary(raw_data),
+                        "business_scenario": TrainingOrchestrator._extract_business_scenario(raw_data),
+                        "compliance_analysis": TrainingOrchestrator._extract_compliance_analysis(raw_data),
+                        "actionable_recommendations": TrainingOrchestrator._extract_recommendations(raw_data),
+                        "implementation_checklist": TrainingOrchestrator._create_implementation_checklist(raw_data),
+                        "risk_assessment": TrainingOrchestrator._create_risk_assessment(raw_data),
+                        "sources_and_references": TrainingOrchestrator._organize_sources(raw_data),
+                        "raw_data": raw_data  # Keep original for detailed reports
                     }
                     
-                    sources_used = data.get('sources_used', [])
-                    company_name = scenario.get('company_name', 'Example Company')
-                    
-                    total_toolkit_items = sum(toolkit_counts.values())
-                    source_count = len(sources_used)
-                    
-                    summary = f"""📊 **Business Toolkit Generated Successfully**
-
-**Scenario Created:** {company_name}
-**Industry:** {scenario.get('industry', 'N/A')}
-
-**🛠️ Toolkit Components Created:**
-- 🔍 Quick Reference Tools: {toolkit_counts['quick_reference_tools']} items
-- 📊 Market Intelligence: {toolkit_counts['market_intelligence']} reports
-- 📧 Communication Templates: {toolkit_counts['communication_templates']} templates
-- 👥 Role-Specific Guides: {toolkit_counts['role_specific_guides']} guides
-
-**📚 Research Sources:** {source_count} current sources referenced
-**📈 Total Business Tools:** {total_toolkit_items} ready-to-use items
-
-**🎯 Next Steps:**
-1. ⬇️ Download your business toolkit using the buttons on the left
-2. 📋 Review the quick reference tools for immediate use
-3. 📧 Implement the communication templates with your team
-4. 🎯 Follow the role-specific guidance for daily operations
-5. 📖 Check the sources section for additional research"""
-                    
-                    self.chat_interface.send(summary, user="Results", respond=False)
+                    return toolkit_data
                     
         except Exception as e:
-            print(f"Error showing results summary: {e}")
-            self.chat_interface.send("✅ Business toolkit generation completed! Use the download buttons to access your results.", user="System", respond=False)
-    
-    def download_markdown_report(self, event):
-        """Download the training report as markdown - Web optimized with better encoding"""
-        if not self.latest_results:
-            self.chat_interface.send("No results available for download.", user="System", respond=False)
-            return
+            logger.error(f"Error processing results: {e}")
+            return {"error": "Failed to process training results", "raw_result": str(result)}
         
-        try:
-            # Get the structured data
-            if hasattr(self.latest_results, 'tasks_output') and self.latest_results.tasks_output:
-                final_task = self.latest_results.tasks_output[-1]
-                if hasattr(final_task, 'pydantic') and final_task.pydantic:
-                    data = final_task.pydantic.model_dump()
-                    markdown_content = self.format_results_as_markdown(data)
-                    
-                    # Create download filename
-                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = f"sustainability_business_toolkit_{timestamp}.md"
-                    
-                    # Safer encoding approach for web deployment
-                    try:
-                        # Encode content as base64 to avoid URL encoding issues
-                        content_bytes = markdown_content.encode('utf-8')
-                        content_b64 = base64.b64encode(content_bytes).decode('ascii')
-                        
-                        download_html = f"""
-                        <div class="download-widget" style="margin: 20px 0; padding: 25px; border: 2px solid #10b981; border-radius: 12px; background: linear-gradient(135deg, #f0fdfa, #ecfdf5); text-align: center; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-                            <h3 style="color: #047857; margin-bottom: 15px; font-size: 1.25rem; font-weight: 700;">📄 Business Toolkit Ready!</h3>
-                            <p style="margin-bottom: 20px; color: #374151; line-height: 1.6;">Click the button below to download your comprehensive sustainability business toolkit.</p>
-                            <button onclick="downloadReportSafe()" 
-                                    style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px 30px; 
-                                           border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;
-                                           box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px;">
-                                📄 Download {filename}
-                            </button>
-                            <p style="margin-top: 15px; font-size: 14px; color: #6b7280; font-weight: 500;">
-                                File size: ~{len(markdown_content):,} characters | Format: Markdown (.md)
-                            </p>
-                        </div>
-                        <script>
-                        function downloadReportSafe() {{
-                            try {{
-                                // Decode from base64
-                                const contentB64 = '{content_b64}';
-                                const contentBytes = Uint8Array.from(atob(contentB64), c => c.charCodeAt(0));
-                                const blob = new Blob([contentBytes], {{ type: 'text/markdown;charset=utf-8' }});
-                                
-                                const url = window.URL.createObjectURL(blob);
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.download = '{filename}';
-                                link.style.display = 'none';
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                                window.URL.revokeObjectURL(url);
-                                
-                                console.log('✅ Download completed successfully');
-                                
-                                // Show success feedback
-                                const button = document.querySelector('button[onclick="downloadReportSafe()"]');
-                                if (button) {{
-                                    const originalText = button.innerHTML;
-                                    button.innerHTML = '✅ Downloaded!';
-                                    button.style.background = 'linear-gradient(135deg, #059669, #047857)';
-                                    setTimeout(() => {{
-                                        button.innerHTML = originalText;
-                                        button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                                    }}, 2000);
-                                }}
-                            }} catch (error) {{
-                                console.error('Download error:', error);
-                                // Fallback method
-                                try {{
-                                    const fallbackContent = atob('{content_b64}');
-                                    const fallbackBlob = new Blob([fallbackContent], {{ type: 'text/plain;charset=utf-8' }});
-                                    const fallbackUrl = window.URL.createObjectURL(fallbackBlob);
-                                    const fallbackLink = document.createElement('a');
-                                    fallbackLink.href = fallbackUrl;
-                                    fallbackLink.download = '{filename}';
-                                    fallbackLink.click();
-                                    window.URL.revokeObjectURL(fallbackUrl);
-                                    alert('✅ Download started (fallback method)');
-                                }} catch (fallbackError) {{
-                                    console.error('Fallback download failed:', fallbackError);
-                                    alert('❌ Download failed. Please try refreshing the page or contact support.');
-                                }}
-                            }}
-                        }}
-                        </script>
-                        """
-                        
-                    except Exception as encoding_error:
-                        print(f"Encoding error: {encoding_error}")
-                        # Ultra-safe fallback - just show the content
-                        download_html = f"""
-                        <div style="margin: 20px 0; padding: 20px; border: 2px solid #dc3545; border-radius: 10px; background-color: #f8f9fa;">
-                            <h3 style="color: #dc3545;">Download Issue</h3>
-                            <p>There was an encoding issue with the download. Please copy the content below:</p>
-                            <textarea style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;" readonly>
-{markdown_content[:1000]}...
-                            </textarea>
-                            <p><small>Content truncated for display. Please refresh and try again for full report.</small></p>
-                        </div>
-                        """
-                    
-                    download_widget = pn.pane.HTML(download_html, sizing_mode="stretch_width")
-                    
-                    self.chat_interface.send("📄 **Business Toolkit Generated Successfully!**", user="System", respond=False)
-                    self.chat_interface.send(download_widget, user="Download", respond=False)
-                    
-        except Exception as e:
-            error_msg = f"Error preparing download: {str(e)}"
-            print(f"Download error: {error_msg}")
-            print(f"Traceback: {traceback.format_exc()}")
-            self.chat_interface.send(error_msg, user="System", respond=False)
+        return {"error": "No structured results available", "raw_result": str(result)}
     
-    def download_pdf_report(self, event):
-        """Download instructions for PDF conversion - Web optimized"""
-        self.chat_interface.send(
-            """📑 **PDF Conversion Instructions:**
-
-**Step 1:** First download the Markdown report using the button above
-
-**Step 2:** Convert to PDF:
-• Go to **https://www.pdfforge.org/online/en/markdown-to-pdf**
-• Upload your .md file or paste the content
-• Click "Convert to PDF"
-• Download your professionally formatted PDF toolkit
-
-
-Your business toolkit contains professional formatting that will look great as a PDF! 🎯""", 
-            user="PDF Help", 
-            respond=False
-        )
-    
-    def format_results_as_markdown(self, data: Dict[str, Any]) -> str:
-        """Format training results as markdown report - Business Toolkit Version"""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        # Extract data sections with safe fallbacks
+    @staticmethod
+    def _create_executive_summary(data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create executive summary for business toolkit"""
         scenario = data.get('scenario', {})
-        problematic_analysis = data.get('problematic_analysis', {})
-        best_practices = data.get('best_practices', {})
+        problems = data.get('problematic_analysis', {}).get('problematic_messages', [])
+        corrections = data.get('best_practices', {}).get('corrected_messages', [])
         
-        # NEW TOOLKIT COMPONENTS
-        quick_reference_tools = data.get('quick_reference_tools', [])
-        market_intelligence = data.get('market_intelligence', [])
-        communication_templates = data.get('communication_templates', [])
-        role_specific_guides = data.get('role_specific_guides', [])
+        return {
+            "company_focus": scenario.get('company_name', 'Example Company'),
+            "industry": scenario.get('industry', 'Not specified'),
+            "compliance_issues_found": len(problems),
+            "solutions_provided": len(corrections),
+            "risk_level": "High" if len(problems) > 3 else "Medium" if len(problems) > 1 else "Low",
+            "implementation_priority": "Immediate action required" if len(problems) > 3 else "Review and implement",
+            "estimated_implementation_time": "2-4 weeks" if len(problems) > 2 else "1-2 weeks"
+        }
+    
+    @staticmethod
+    def _extract_business_scenario(data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract business scenario in toolkit format"""
+        scenario = data.get('scenario', {})
+        return {
+            "company_profile": {
+                "name": scenario.get('company_name', ''),
+                "industry": scenario.get('industry', ''),
+                "size": scenario.get('company_size', ''),
+                "location": scenario.get('location', ''),
+                "target_market": scenario.get('target_audience', '')
+            },
+            "business_context": {
+                "product_service": scenario.get('product_service', ''),
+                "sustainability_goals": scenario.get('preliminary_claims', []),
+                "market_position": scenario.get('marketing_objectives', []),
+                "regulatory_environment": scenario.get('regulatory_context', '')
+            }
+        }
+    
+    @staticmethod
+    def _extract_compliance_analysis(data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract compliance analysis for business decision-making"""
+        problems = data.get('problematic_analysis', {}).get('problematic_messages', [])
+        corrections = data.get('best_practices', {}).get('corrected_messages', [])
         
-        personalized_feedback = data.get('personalized_feedback', {})
-        key_takeaways = data.get('key_takeaways', [])
-        sources_used = data.get('sources_used', [])
+        # Categorize issues by severity and regulatory risk
+        high_risk_issues = []
+        medium_risk_issues = []
+        low_risk_issues = []
         
-        # Helper function to safely format lists
-        def safe_format_list(items, prefix="- "):
-            if not items:
-                return "- None specified\n"
-            result = ""
-            for item in items:
-                clean_item = str(item).replace('\n', ' ').replace('\r', ' ')
-                result += f"{prefix}{clean_item}\n"
-            return result
+        for problem in problems:
+            violations = problem.get('regulatory_violations', [])
+            consequences = problem.get('potential_consequences', [])
+            
+            risk_score = len(violations) + len(consequences)
+            
+            issue_summary = {
+                "message": problem.get('message', ''),
+                "primary_violation": violations[0] if violations else 'Compliance concern',
+                "business_impact": consequences[0] if consequences else 'Reputational risk',
+                "recommended_action": "Immediate revision required"
+            }
+            
+            if risk_score >= 4:
+                high_risk_issues.append(issue_summary)
+            elif risk_score >= 2:
+                medium_risk_issues.append(issue_summary)
+            else:
+                low_risk_issues.append(issue_summary)
         
-        # Helper function to safely format text
-        def safe_format_text(text, default="N/A"):
-            if not text:
-                return default
-            return str(text).replace('\n', ' ').replace('\r', ' ')
+        return {
+            "overall_compliance_score": max(0, 100 - (len(high_risk_issues) * 25 + len(medium_risk_issues) * 10)),
+            "critical_issues": high_risk_issues,
+            "moderate_issues": medium_risk_issues,
+            "minor_issues": low_risk_issues,
+            "regulatory_frameworks_analyzed": data.get('problematic_analysis', {}).get('regulatory_landscape', ''),
+            "compliance_recommendations": [
+                "Implement pre-publication compliance review process",
+                "Train marketing team on current regulations",
+                "Establish legal approval workflow for sustainability claims",
+                "Regular compliance audits of marketing materials"
+            ]
+        }
+    
+    @staticmethod
+    def _extract_recommendations(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Extract actionable recommendations for business implementation"""
+        corrections = data.get('best_practices', {}).get('corrected_messages', [])
+        feedback = data.get('personalized_feedback', {})
         
-        markdown = f"""# Sustainability Marketing Toolkit
+        recommendations = []
+        
+        # Message-specific recommendations
+        for correction in corrections:
+            rec = {
+                "category": "Message Improvement",
+                "priority": "High",
+                "action": "Replace problematic messaging",
+                "original_issue": correction.get('original_message_id', ''),
+                "recommended_solution": correction.get('corrected_message', ''),
+                "business_rationale": correction.get('effectiveness_rationale', ''),
+                "implementation_steps": correction.get('changes_made', []),
+                "timeline": "Immediate",
+                "responsible_team": "Marketing & Legal"
+            }
+            recommendations.append(rec)
+        
+        # Process-specific recommendations
+        process_recs = [
+            {
+                "category": "Process Improvement",
+                "priority": "High",
+                "action": "Establish compliance review process",
+                "description": "Create formal review process for all sustainability communications",
+                "implementation_steps": [
+                    "Draft compliance review checklist",
+                    "Assign legal team review responsibilities", 
+                    "Create approval workflow in marketing tools",
+                    "Train team on new process"
+                ],
+                "timeline": "2-3 weeks",
+                "responsible_team": "Marketing Operations & Legal"
+            },
+            {
+                "category": "Team Training",
+                "priority": "Medium",
+                "action": "Conduct team compliance training",
+                "description": "Educate marketing team on sustainability messaging best practices",
+                "implementation_steps": feedback.get('team_training_recommendations', []),
+                "timeline": "1 month",
+                "responsible_team": "HR & Marketing Leadership"
+            }
+        ]
+        
+        recommendations.extend(process_recs)
+        return recommendations
+    
+    @staticmethod
+    def _create_implementation_checklist(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Create actionable implementation checklist"""
+        return [
+            {
+                "task": "Review and replace flagged messaging",
+                "priority": "Critical",
+                "timeline": "This week",
+                "owner": "Marketing Team",
+                "status": "pending",
+                "dependencies": []
+            },
+            {
+                "task": "Legal review of revised messages",
+                "priority": "Critical", 
+                "timeline": "This week",
+                "owner": "Legal Team",
+                "status": "pending",
+                "dependencies": ["Review and replace flagged messaging"]
+            },
+            {
+                "task": "Implement compliance review process",
+                "priority": "High",
+                "timeline": "2 weeks",
+                "owner": "Marketing Operations",
+                "status": "pending",
+                "dependencies": []
+            },
+            {
+                "task": "Train team on compliance requirements",
+                "priority": "High",
+                "timeline": "3 weeks",
+                "owner": "Marketing Leadership",
+                "status": "pending",
+                "dependencies": ["Implement compliance review process"]
+            },
+            {
+                "task": "Audit existing marketing materials",
+                "priority": "Medium",
+                "timeline": "1 month",
+                "owner": "Marketing Team",
+                "status": "pending",
+                "dependencies": ["Train team on compliance requirements"]
+            },
+            {
+                "task": "Establish ongoing monitoring process",
+                "priority": "Medium",
+                "timeline": "6 weeks",
+                "owner": "Marketing Operations",
+                "status": "pending",
+                "dependencies": ["Audit existing marketing materials"]
+            }
+        ]
+    
+    @staticmethod
+    def _create_risk_assessment(data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create business risk assessment"""
+        problems = data.get('problematic_analysis', {}).get('problematic_messages', [])
+        
+        # Calculate risk metrics
+        regulatory_risks = []
+        reputational_risks = []
+        financial_risks = []
+        
+        for problem in problems:
+            violations = problem.get('regulatory_violations', [])
+            consequences = problem.get('potential_consequences', [])
+            
+            for violation in violations:
+                if any(keyword in violation.lower() for keyword in ['fine', 'penalty', 'enforcement']):
+                    financial_risks.append(violation)
+                else:
+                    regulatory_risks.append(violation)
+            
+            for consequence in consequences:
+                if any(keyword in consequence.lower() for keyword in ['reputation', 'brand', 'trust']):
+                    reputational_risks.append(consequence)
+                elif any(keyword in consequence.lower() for keyword in ['fine', 'lawsuit', 'penalty']):
+                    financial_risks.append(consequence)
+        
+        # Calculate overall risk score
+        total_risks = len(regulatory_risks) + len(reputational_risks) + len(financial_risks)
+        risk_level = "High" if total_risks > 6 else "Medium" if total_risks > 3 else "Low"
+        
+        return {
+            "overall_risk_level": risk_level,
+            "risk_score": min(100, total_risks * 10),
+            "regulatory_compliance_risks": regulatory_risks[:5],  # Top 5
+            "reputational_risks": reputational_risks[:5],
+            "financial_risks": financial_risks[:5],
+            "mitigation_priority": "Immediate" if risk_level == "High" else "Within 30 days",
+            "recommended_next_steps": [
+                "Immediate legal review of flagged content",
+                "Pause distribution of problematic messaging",
+                "Implement enhanced compliance processes",
+                "Consider external compliance audit"
+            ] if risk_level == "High" else [
+                "Schedule legal review within 1 week",
+                "Revise flagged messaging",
+                "Enhance review processes",
+                "Monitor industry compliance trends"
+            ]
+        }
+    
+    @staticmethod
+    def _organize_sources(data: Dict[str, Any]) -> Dict[str, Any]:
+        """Organize sources for business reference"""
+        sources = data.get('sources_used', [])
+        
+        organized = {
+            "regulatory_sources": [],
+            "industry_examples": [],
+            "best_practice_guides": [],
+            "news_and_updates": [],
+            "total_sources": len(sources)
+        }
+        
+        for source in sources:
+            source_type = source.get('type', 'other')
+            source_info = {
+                "title": source.get('title', ''),
+                "url": source.get('url', ''),
+                "description": source.get('description', ''),
+                "access_date": source.get('access_date', ''),
+                "relevance": "High"  # Could be calculated based on usage
+            }
+            
+            if source_type == 'regulatory':
+                organized["regulatory_sources"].append(source_info)
+            elif source_type in ['company_example', 'case_study']:
+                organized["industry_examples"].append(source_info)
+            elif source_type == 'best_practice':
+                organized["best_practice_guides"].append(source_info)
+            elif source_type == 'news':
+                organized["news_and_updates"].append(source_info)
+        
+        return organized
 
-**Generated:** {timestamp}
-**Session ID:** {safe_format_text(data.get('session_id', 'N/A'))}
-**Learner Profile:** {safe_format_text(data.get('learner_profile', 'Marketing Professional'))}
+# ===== API ENDPOINTS ===== #
 
----
+@app.get("/")
+async def root():
+    """API health check"""
+    return {
+        "service": "Sustainability Training API Toolkit",
+        "version": "2.0.0",
+        "status": "active",
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/health")
+async def health_check():
+    """Detailed health check"""
+    try:
+        # Test CrewAI import
+        from sustainability.crew import Sustainability
+        crewai_status = "available"
+    except Exception as e:
+        crewai_status = f"error: {str(e)}"
+    
+    # Check API keys
+    api_keys = {
+        "openai": bool(os.getenv("OPENAI_API_KEY")),
+        "serper": bool(os.getenv("SERPER_API_KEY"))
+    }
+    
+    return {
+        "status": "healthy",
+        "crewai": crewai_status,
+        "api_keys": api_keys,
+        "active_sessions": len(session_manager.sessions),
+        "websocket_connections": sum(len(conns) for conns in session_manager.websocket_connections.values())
+    }
+
+@app.post("/training/start", response_model=TrainingSession)
+async def start_training(request: TrainingRequest, background_tasks: BackgroundTasks):
+    """Start new training session"""
+    
+    # Validate inputs
+    if not request.industry or not request.regulations:
+        raise HTTPException(status_code=400, detail="Industry and regulations are required")
+    
+    # Create session
+    session = session_manager.create_session(request)
+    
+    # Start training in background
+    background_tasks.add_task(
+        TrainingOrchestrator.run_training_session,
+        session.session_id,
+        request
+    )
+    
+    return session
+
+@app.get("/training/{session_id}", response_model=TrainingSession)
+async def get_training_status(session_id: str):
+    """Get training session status"""
+    
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    return session
+
+@app.get("/training/{session_id}/results")
+async def get_training_results(session_id: str):
+    """Get training session results"""
+    
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    if session.status != "completed":
+        raise HTTPException(status_code=400, detail="Training not completed")
+    
+    return session.results
+
+@app.post("/reports/generate")
+async def generate_report(request: ReportRequest):
+    """Generate report in specified format"""
+    
+    session = session_manager.get_session(request.session_id)
+    if not session or not session.results:
+        raise HTTPException(status_code=404, detail="Session or results not found")
+    
+    if request.format == "markdown":
+        report_content = ReportGenerator.generate_business_markdown(session.results, request)
+        return {"content": report_content, "filename": f"sustainability_report_{request.session_id}.md"}
+    
+    elif request.format == "json":
+        return {"content": session.results, "filename": f"sustainability_data_{request.session_id}.json"}
+    
+    elif request.format == "executive":
+        executive_report = ReportGenerator.generate_executive_summary(session.results)
+        return {"content": executive_report, "filename": f"executive_summary_{request.session_id}.md"}
+    
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported format")
+
+@app.websocket("/ws/{session_id}")
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    """WebSocket endpoint for real-time updates"""
+    
+    await websocket.accept()
+    session_manager.add_websocket(session_id, websocket)
+    
+    try:
+        # Send initial connection confirmation
+        await websocket.send_text(json.dumps({
+            "session_id": session_id,
+            "agent_name": "System", 
+            "message": "Connected to real-time updates",
+            "message_type": "info",
+            "timestamp": datetime.now().isoformat()
+        }))
+        
+        # Keep connection alive
+        while True:
+            # Receive any messages from client (ping/pong, etc.)
+            try:
+                await asyncio.wait_for(websocket.receive_text(), timeout=30.0)
+            except asyncio.TimeoutError:
+                # Send ping to keep connection alive
+                await websocket.ping()
+            
+    except Exception as e:
+        logger.info(f"WebSocket disconnected for session {session_id}: {e}")
+    finally:
+        session_manager.remove_websocket(session_id, websocket)
+
+@app.get("/sessions")
+async def list_sessions():
+    """List all training sessions"""
+    return [
+        {
+            "session_id": session.session_id,
+            "status": session.status,
+            "created_at": session.created_at.isoformat(),
+            "progress": session.progress
+        }
+        for session in session_manager.sessions.values()
+    ]
+
+@app.delete("/sessions/{session_id}")
+async def delete_session(session_id: str):
+    """Delete training session"""
+    if session_id in session_manager.sessions:
+        del session_manager.sessions[session_id]
+        return {"message": "Session deleted"}
+    raise HTTPException(status_code=404, detail="Session not found")
+
+# ===== REPORT GENERATION ===== #
+
+class ReportGenerator:
+    """Generate business-focused reports for the toolkit"""
+    
+    @staticmethod
+    def generate_business_markdown(results: Dict[str, Any], request: ReportRequest) -> str:
+        """Generate business-focused markdown report"""
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        session_info = results.get('session_info', {})
+        executive_summary = results.get('executive_summary', {})
+        scenario = results.get('business_scenario', {})
+        compliance = results.get('compliance_analysis', {})
+        recommendations = results.get('actionable_recommendations', [])
+        checklist = results.get('implementation_checklist', [])
+        risk_assessment = results.get('risk_assessment', {})
+        
+        markdown = f"""# Sustainability Compliance Analysis Report
+
+**Generated:** {timestamp}  
+**Session ID:** {session_info.get('session_id', 'N/A')}  
+**Analysis Version:** {session_info.get('version', '2.0')}
 
 ## Executive Summary
 
-This comprehensive sustainability marketing toolkit provides immediately actionable tools, templates, and guidance for compliant sustainability messaging. The toolkit is based on current market research, regulatory requirements, and industry best practices.
+**Company:** {executive_summary.get('company_focus', 'N/A')}  
+**Industry:** {executive_summary.get('industry', 'N/A')}  
+**Risk Level:** {executive_summary.get('risk_level', 'Medium')}  
+**Implementation Priority:** {executive_summary.get('implementation_priority', 'Review required')}  
 
-**Toolkit Components:**
-- 🔍 {len(quick_reference_tools)} Quick Reference Tools
-- 📊 {len(market_intelligence)} Market Intelligence Reports  
-- 📧 {len(communication_templates)} Communication Templates
-- 👥 {len(role_specific_guides)} Role-Specific Guides
+**Key Findings:**
+- {executive_summary.get('compliance_issues_found', 0)} compliance issues identified
+- {executive_summary.get('solutions_provided', 0)} solutions provided
+- Estimated implementation time: {executive_summary.get('estimated_implementation_time', '2-4 weeks')}
 
----
+## Business Context
 
-## Business Scenario
+### Company Profile
+- **Industry:** {scenario.get('company_profile', {}).get('industry', 'N/A')}
+- **Size:** {scenario.get('company_profile', {}).get('size', 'N/A')}
+- **Target Market:** {scenario.get('company_profile', {}).get('target_market', 'N/A')}
 
-**Company:** {safe_format_text(scenario.get('company_name', 'N/A'))}
-**Industry:** {safe_format_text(scenario.get('industry', 'N/A'))}
-**Location:** {safe_format_text(scenario.get('location', 'N/A'))}
-**Size:** {safe_format_text(scenario.get('company_size', 'N/A'))}
+### Product/Service
+{scenario.get('business_context', {}).get('product_service', 'No description available')}
 
-### Company Overview
-**Product/Service:** {safe_format_text(scenario.get('product_service', 'N/A'))}
-**Target Audience:** {safe_format_text(scenario.get('target_audience', 'N/A'))}
+## Compliance Analysis
 
-### Marketing Objectives
-{safe_format_list(scenario.get('marketing_objectives', []))}
+**Overall Compliance Score:** {compliance.get('overall_compliance_score', 0)}/100
 
-### Sustainability Context
-{safe_format_text(scenario.get('sustainability_context', 'N/A'))}
-
-### Regulatory Framework
-{safe_format_text(scenario.get('regulatory_context', 'N/A'))}
-
----
-
-## Problematic Messaging Analysis
-
+### Critical Issues Requiring Immediate Action
 """
         
-        # Add problematic messages with safe formatting (keep existing)
-        for i, msg in enumerate(problematic_analysis.get('problematic_messages', []), 1):
-            markdown += f"""### Example {i}: {safe_format_text(msg.get('id', f'Message {i}'))}
-
-**Problematic Message:**
-> {safe_format_text(msg.get('message', 'N/A'))}
-
-**Problems Identified:**
-{safe_format_list(msg.get('problems_identified', []))}
-
-**Regulatory Violations:**
-{safe_format_list(msg.get('regulatory_violations', []))}
-
-**Why This Is Problematic:**
-{safe_format_text(msg.get('why_problematic', 'N/A'))}
-
-**Potential Consequences:**
-{safe_format_list(msg.get('potential_consequences', []))}
-
----
-
+        # Add critical issues
+        for issue in compliance.get('critical_issues', []):
+            markdown += f"""
+#### {issue.get('primary_violation', 'Compliance Issue')}
+- **Problematic Message:** {issue.get('message', 'N/A')}
+- **Business Impact:** {issue.get('business_impact', 'Risk to reputation')}
+- **Action Required:** {issue.get('recommended_action', 'Immediate review')}
 """
         
-        markdown += """## Best Practice Corrections
+        markdown += f"""
+## Risk Assessment
 
+**Overall Risk Level:** {risk_assessment.get('overall_risk_level', 'Medium')}  
+**Risk Score:** {risk_assessment.get('risk_score', 0)}/100  
+**Mitigation Timeline:** {risk_assessment.get('mitigation_priority', 'Within 30 days')}
+
+### Primary Risk Categories
+- **Regulatory Risks:** {len(risk_assessment.get('regulatory_compliance_risks', []))} identified
+- **Reputational Risks:** {len(risk_assessment.get('reputational_risks', []))} identified  
+- **Financial Risks:** {len(risk_assessment.get('financial_risks', []))} identified
+
+## Implementation Roadmap
+
+### Immediate Actions (This Week)
 """
         
-        # Add corrected messages with safe formatting (keep existing)
-        for i, correction in enumerate(best_practices.get('corrected_messages', []), 1):
-            markdown += f"""### Correction {i}
-
-**Original Message ID:** {safe_format_text(correction.get('original_message_id', 'N/A'))}
-
-**Improved Message:**
-> {safe_format_text(correction.get('corrected_message', 'N/A'))}
-
-**Changes Made:**
-{safe_format_list(correction.get('changes_made', []))}
-
-**Compliance Notes:**
-{safe_format_text(correction.get('compliance_notes', 'N/A'))}
-
-**Best Practices Applied:**
-{safe_format_list(correction.get('best_practices_applied', []))}
-
----
-
+        # Add immediate actions from checklist
+        immediate_tasks = [task for task in checklist if task.get('priority') == 'Critical']
+        for task in immediate_tasks:
+            markdown += f"- [ ] {task.get('task', '')} (Owner: {task.get('owner', 'TBD')})\n"
+        
+        markdown += """
+### Short-term Actions (2-4 Weeks)
 """
         
-        # NEW TOOLKIT SECTIONS REPLACE ASSESSMENT QUESTIONS
-        markdown += """## 🔍 Quick Reference Tools
-
+        short_term_tasks = [task for task in checklist if task.get('priority') == 'High']
+        for task in short_term_tasks:
+            markdown += f"- [ ] {task.get('task', '')} (Owner: {task.get('owner', 'TBD')})\n"
+        
+        markdown += """
+### Medium-term Actions (1-2 Months)
 """
         
-        if quick_reference_tools:
-            # Group by category for better organization
-            categories = {}
-            for tool in quick_reference_tools:
-                category = tool.get('category', 'other')
-                if category not in categories:
-                    categories[category] = []
-                categories[category].append(tool)
+        medium_term_tasks = [task for task in checklist if task.get('priority') == 'Medium']
+        for task in medium_term_tasks:
+            markdown += f"- [ ] {task.get('task', '')} (Owner: {task.get('owner', 'TBD')})\n"
+        
+        markdown += """
+## Detailed Recommendations
+
+### Process Improvements
+"""
+        
+        # Add process recommendations
+        process_recs = [rec for rec in recommendations if rec.get('category') == 'Process Improvement']
+        for rec in process_recs:
+            markdown += f"""
+#### {rec.get('action', '')}
+**Priority:** {rec.get('priority', 'Medium')}  
+**Timeline:** {rec.get('timeline', 'TBD')}  
+**Responsible Team:** {rec.get('responsible_team', 'TBD')}
+
+{rec.get('description', '')}
+
+**Implementation Steps:**
+"""
+            for step in rec.get('implementation_steps', []):
+                markdown += f"- {step}\n"
+        
+        # Add sources if requested
+        if request.include_sources:
+            sources = results.get('sources_and_references', {})
+            markdown += f"""
+## Sources and References
+
+**Total Sources:** {sources.get('total_sources', 0)}
+
+### Regulatory Sources
+"""
+            for source in sources.get('regulatory_sources', [])[:5]:
+                markdown += f"- [{source.get('title', 'Untitled')}]({source.get('url', '#')})\n"
             
-            for category, tools in categories.items():
-                category_title = category.replace('_', ' ').title()
-                markdown += f"""### {category_title}
-
+            markdown += """
+### Industry Examples
 """
-                for tool in tools:
-                    priority_icon = "🔴" if tool.get('priority') == 'high' else "🟡" if tool.get('priority') == 'medium' else "🟢"
-                    markdown += f"""#### {priority_icon} {safe_format_text(tool.get('title', 'Untitled'))}
-
-**Format:** {safe_format_text(tool.get('display_format', 'N/A'))}
-**Priority:** {safe_format_text(tool.get('priority', 'N/A'))}
-
-"""
-                    content_list = tool.get('content', [])
-                    if tool.get('display_format') == 'checklist':
-                        markdown += "**Checklist:**\n"
-                        markdown += safe_format_list(content_list, "- [ ] ")
-                    else:
-                        markdown += "**Content:**\n"
-                        markdown += safe_format_list(content_list)
-                    
-                    markdown += "\n---\n\n"
-        else:
-            markdown += "No quick reference tools available.\n\n"
-        
-        markdown += """## 📊 Market Intelligence
-
-"""
-        
-        if market_intelligence:
-            for intel in market_intelligence:
-                intel_title = safe_format_text(intel.get('trend_type', 'Market Trends')).replace('_', ' ').title()
-                confidence = safe_format_text(intel.get('confidence_level', 'Unknown'))
-                updated = safe_format_text(intel.get('last_updated', 'Unknown'))
-                
-                markdown += f"""### {intel_title}
-
-**Confidence Level:** {confidence} | **Last Updated:** {updated}
-**Geographic Scope:** {safe_format_text(intel.get('geographic_scope', 'N/A'))}
-
-"""
-                for item in intel.get('items', []):
-                    status_icon = "📈" if item.get('status') == 'rising' else "📉" if item.get('status') == 'declining' else "➡️"
-                    risk_icon = "🔴" if item.get('risk_level') == 'high' else "🟡" if item.get('risk_level') == 'medium' else "🟢"
-                    
-                    markdown += f"""#### {status_icon} {safe_format_text(item.get('name', 'Trend'))} {risk_icon}
-
-**Status:** {safe_format_text(item.get('status', 'N/A'))} | **Risk Level:** {safe_format_text(item.get('risk_level', 'N/A'))}
-
-**Description:** {safe_format_text(item.get('description', 'N/A'))}
-
-**Example:** {safe_format_text(item.get('example', 'N/A'))}
-
-**Recommendation:** {safe_format_text(item.get('recommendation', 'N/A'))}
-
-"""
-                markdown += "---\n\n"
-        else:
-            markdown += "No market intelligence available.\n\n"
-        
-        markdown += """## 📧 Communication Templates
-
-"""
-        
-        if communication_templates:
-            # Group by urgency level
-            urgency_order = ['crisis', 'urgent', 'routine']
-            for urgency in urgency_order:
-                urgency_templates = [t for t in communication_templates if t.get('urgency_level') == urgency]
-                if urgency_templates:
-                    urgency_icon = "🚨" if urgency == 'crisis' else "⚡" if urgency == 'urgent' else "📝"
-                    markdown += f"""### {urgency_icon} {urgency.title()} Communications
-
-"""
-                    for template in urgency_templates:
-                        template_type = safe_format_text(template.get('template_type', 'Unknown')).replace('_', ' ').title()
-                        recipient = safe_format_text(template.get('recipient_role', 'Unknown')).replace('_', ' ').title()
-                        
-                        markdown += f"""#### {template_type} - {recipient}
-
-**Subject Line:**
-{safe_format_text(template.get('subject_line', 'N/A'))}
-
-**Template:**
-{safe_format_text(template.get('body_template', 'N/A'))}
-
-**Required Attachments:**
-{safe_format_list(template.get('required_attachments', []))}
-
-**Customization Notes:**
-{safe_format_text(template.get('customization_notes', 'N/A'))}
-
----
-
-"""
-        else:
-            markdown += "No communication templates available.\n\n"
-        
-        markdown += """## 👥 Role-Specific Guides
-
-"""
-        
-        if role_specific_guides:
-            for guide in role_specific_guides:
-                role_name = safe_format_text(guide.get('role', 'Unknown Role')).replace('_', ' ').title()
-                
-                markdown += f"""### {role_name}
-
-#### Daily Checklist
-{safe_format_list(guide.get('daily_checklist', []), '- [ ] ')}
-
-#### Approval Workflow
-"""
-                for i, step in enumerate(guide.get('approval_workflow', []), 1):
-                    markdown += f"""**Step {i}: {safe_format_text(step.get('step_name', 'Unknown'))}**
-- **When Required:** {safe_format_text(step.get('when_required', 'N/A'))}
-- **Estimated Time:** {safe_format_text(step.get('estimated_time', 'N/A'))}
-- **Responsible:** {safe_format_text(step.get('responsible_role', 'N/A'))}
-- **Required Information:** {', '.join(step.get('required_information', []))}
-
-"""
-                
-                markdown += f"""#### Common Mistakes to Avoid
-{safe_format_list(guide.get('common_mistakes', []))}
-
-#### Escalation Triggers
-{safe_format_list(guide.get('escalation_triggers', []))}
-
-#### Success Metrics
-{safe_format_list(guide.get('success_metrics', []))}
-
-#### Tools and Resources
-{safe_format_list(guide.get('tools_and_resources', []))}
-
----
-
-"""
-        else:
-            markdown += "No role-specific guides available.\n\n"
-        
-        # ENHANCED FEEDBACK SECTION
-        markdown += """## Personalized Implementation Guidance
-
-### Role-Specific Tips
-"""
-        markdown += safe_format_list(personalized_feedback.get('role_specific_tips', []))
-        
-        markdown += """
-### Team Training Recommendations
-"""
-        markdown += safe_format_list(personalized_feedback.get('team_training_recommendations', []))
-        
-        markdown += """
-### Implementation Strategies
-"""
-        markdown += safe_format_list(personalized_feedback.get('implementation_strategies', []))
-        
-        markdown += """
-### Priority Quick References
-"""
-        priority_refs = personalized_feedback.get('priority_quick_references', [])
-        if priority_refs:
-            markdown += safe_format_list(priority_refs)
-        else:
-            markdown += "- Focus on high-priority red flags checklist first\n- Implement safe word alternatives guide immediately\n"
-        
-        markdown += """
-### Recommended Templates
-"""
-        recommended_templates = personalized_feedback.get('recommended_templates', [])
-        if recommended_templates:
-            markdown += safe_format_list(recommended_templates)
-        else:
-            markdown += "- Start with legal review email template\n- Use vendor brief template for agency communications\n"
-        
-        markdown += """
-### Next Steps
-"""
-        markdown += safe_format_list(personalized_feedback.get('next_steps', []))
-        
-        markdown += """
----
-
-## Key Takeaways
-
-"""
-        markdown += safe_format_list(key_takeaways)
-        
-        markdown += """
----
-
-## Implementation Checklist
-
-"""
-        markdown += safe_format_list(data.get('compliance_checklist', []), "- [ ] ")
-        
-        # Sources section (keep existing)
-        markdown += """
----
-
-## Sources
-
-This training session referenced the following sources for research, regulatory guidance, and real-world examples:
-
-"""
-        
-        if sources_used:
-            # Organize sources by type
-            sources_by_type = {}
-            for source in sources_used:
-                source_type = source.get('type', 'other')
-                if source_type not in sources_by_type:
-                    sources_by_type[source_type] = []
-                sources_by_type[source_type].append(source)
-            
-            type_headers = {
-                'regulatory': '### Regulatory Sources',
-                'company_example': '### Company Examples and Case Studies',
-                'best_practice': '### Best Practice Examples',
-                'market_research': '### Market Research and Trends',
-                'news': '### Recent News and Developments',
-                'knowledge_panel': '### Reference Sources',
-                'web_search': '### Additional Research Sources',
-                'other': '### Other Sources'
-            }
-            
-            for source_type, type_sources in sources_by_type.items():
-                header = type_headers.get(source_type, f'### {source_type.title()} Sources')
-                markdown += f"{header}\n\n"
-                
-                for i, source in enumerate(type_sources, 1):
-                    title = safe_format_text(source.get('title', 'Untitled'))
-                    url = safe_format_text(source.get('url', 'No URL'))
-                    description = safe_format_text(source.get('description', ''))
-                    access_date = safe_format_text(source.get('access_date', 'Unknown'))
-                    
-                    markdown += f"{i}. **{title}**\n"
-                    markdown += f"   - URL: {url}\n"
-                    markdown += f"   - Accessed: {access_date}\n"
-                    
-                    if description and description != 'N/A':
-                        markdown += f"   - Description: {description}\n"
-                    
-                    markdown += "\n"
-                
-                markdown += "---\n\n"
-            
-            total_sources = len(sources_used)
-            markdown += f"""### Source Summary
-
-**Total Sources Referenced:** {total_sources}
-
-All sources were accessed during the training session and represent current information as of the session date.
-
-"""
-        else:
-            markdown += "No source information was collected during this training session.\n\n"
+            for source in sources.get('industry_examples', [])[:5]:
+                markdown += f"- [{source.get('title', 'Untitled')}]({source.get('url', '#')})\n"
         
         markdown += f"""
 ---
 
-*This business toolkit was generated by AI-powered sustainability training system on {timestamp}*
-*Ready for immediate implementation by marketing teams*
+*This report was generated by the Sustainability Training AI Toolkit v2.0*  
+*Report ID: {session_info.get('session_id', 'N/A')} | Generated: {timestamp}*
 """
         
         return markdown
     
-    def reset_session(self, event):
-        """Reset the training session"""
-        # Reset state
-        self.latest_results = None
-        self.is_training_active = False
+    @staticmethod
+    def generate_executive_summary(results: Dict[str, Any]) -> str:
+        """Generate executive summary for leadership"""
         
-        # Reset UI
-        self.start_button.disabled = False
-        self.start_button.name = "🚀 Start Training"
-        self.download_md_button.disabled = True
-        self.download_pdf_button.disabled = True
+        executive_summary = results.get('executive_summary', {})
+        risk_assessment = results.get('risk_assessment', {})
+        compliance = results.get('compliance_analysis', {})
         
-        # Show instructions and hide chat
-        self.initial_instructions.visible = True
-        self.chat_interface.visible = False
-        
-        # Clear chat
-        self.chat_interface.clear()
-    
-    def servable(self):
-        """Return the servable Panel application"""
-        return self.layout
+        return f"""# Executive Summary - Sustainability Compliance Analysis
 
+## Key Findings
 
-def create_sustainability_app():
-    """Factory function to create the sustainability training app"""
-    try:
-        app = SustainabilityPanelApp()
-        print("✅ Sustainability Panel App created successfully")
-        return app
-    except Exception as e:
-        print(f"❌ Error creating app: {e}")
-        print(f"Full traceback: {traceback.format_exc()}")
-        raise e
+**Company:** {executive_summary.get('company_focus', 'N/A')}  
+**Overall Risk Level:** {risk_assessment.get('overall_risk_level', 'Medium')}  
+**Compliance Score:** {compliance.get('overall_compliance_score', 0)}/100
 
+## Business Impact
 
-# For direct testing
+- **Compliance Issues:** {executive_summary.get('compliance_issues_found', 0)} issues requiring attention
+- **Implementation Time:** {executive_summary.get('estimated_implementation_time', '2-4 weeks')}
+- **Risk Mitigation:** {risk_assessment.get('mitigation_priority', 'Within 30 days')}
+
+## Recommended Actions
+
+{', '.join(risk_assessment.get('recommended_next_steps', [])[:3])}
+
+## Investment Required
+
+- **Time:** {executive_summary.get('estimated_implementation_time', '2-4 weeks')} for full implementation
+- **Resources:** Marketing, Legal, and Operations team coordination
+- **Priority:** {executive_summary.get('implementation_priority', 'Review and implement')}
+
+**Bottom Line:** Immediate action required to ensure regulatory compliance and protect brand reputation.
+"""
+
+# ===== APPLICATION FACTORY ===== #
+
+def create_sustainability_toolkit():
+    """Factory function to create the API toolkit"""
+    return app
+
+# For direct deployment
 if __name__ == "__main__":
-    app = create_sustainability_app()
-    app.layout.servable()
+    import uvicorn
     
-    # Local development server
-    if not os.environ.get('PORT'):
-        pn.serve(
-            app.layout,
-            port=5007,
-            show=True,
-            autoreload=True
-        )
+    port = int(os.environ.get("PORT", 8000))
+    
+    uvicorn.run(
+        "panel_bridge:app",
+        host="0.0.0.0",
+        port=port,
+        reload=False,  # Set to True for development
+        log_level="info"
+    )

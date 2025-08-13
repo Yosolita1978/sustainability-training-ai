@@ -1,17 +1,15 @@
 from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
-from .tools.custom_serper import CustomSerperTool  # Add this
+from .tools.custom_serper import CustomSerperTool
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List
 import os
 from datetime import datetime
 
 # Add Panel callback imports
 from .callbacks import print_task_output, get_panel_callback_handler
 
-# ============================================================================
-# EXISTING MODELS (Unchanged)
-# ============================================================================
+# ===== CORE TRAINING MODELS ===== #
 
 class SustainabilityScenario(BaseModel):
     """A realistic business scenario for sustainability messaging training"""
@@ -66,18 +64,6 @@ class BestPracticeGuidance(BaseModel):
     industry_specific_advice: str = Field(description="Advice specific to the industry in the scenario")
     research_sources: List[str] = Field(description="Sources for best practices and examples")
 
-# KEEPING EXISTING ASSESSMENT MODEL FOR NOW (Option 2 - Gradual approach)
-class AssessmentQuestion(BaseModel):
-    """A training assessment question - LEGACY MODEL"""
-    id: str = Field(description="Question identifier")
-    type: str = Field(description="Question type (multiple_choice, scenario_analysis, identification)")
-    question: str = Field(description="The assessment question")
-    options: List[str] = Field(description="Answer options (for multiple choice questions)")
-    correct_answer: str = Field(description="The correct answer")
-    explanation: str = Field(description="Detailed explanation of the correct answer")
-    difficulty_level: str = Field(description="beginner, intermediate, or advanced")
-    learning_objective: str = Field(description="What this question tests")
-
 class SourceReference(BaseModel):
     """A source reference used in the training"""
     title: str = Field(description="Title of the source")
@@ -88,151 +74,98 @@ class SourceReference(BaseModel):
     used_by_agent: str = Field(description="Which agent used this source")
     query: str = Field(description="Search query that found this source")
 
-# ============================================================================
-# NEW TOOLKIT MODELS (Addition for Option 2)
-# ============================================================================
+# ===== BUSINESS TOOLKIT MODELS ===== #
 
 class QuickReferenceItem(BaseModel):
-    """Quick reference tool for daily marketing work"""
-    category: str = Field(description="Category: red_flags, safe_alternatives, approval_checklist, etc.")
-    title: str = Field(description="Display title for this reference item")
-    display_format: str = Field(description="Display format: checklist, comparison_table, flowchart, tips")
-    content: List[str] = Field(description="The actual reference items/steps/tips")
-    priority: str = Field(description="Priority for display: high, medium, low")
-    industry_specific: bool = Field(description="True if specific to user's industry")
-    related_problems: List[str] = Field(description="IDs of related problematic messages", default_factory=list)
-
-class TrendItem(BaseModel):
-    """Individual trend or market development"""
-    name: str = Field(description="Name of the trend or development")
-    status: str = Field(description="Status: rising, stable, declining, regulatory_risk")
-    description: str = Field(description="What marketers need to know about this trend")
-    example: str = Field(description="Real company example demonstrating this trend")
-    risk_level: str = Field(description="Risk level: high, medium, low")
-    recommendation: str = Field(description="Actionable recommendation for marketers")
+    """Quick reference tool for marketing teams"""
+    id: str = Field(description="Unique identifier for reference item")
+    title: str = Field(description="Tool title")
+    category: str = Field(description="red_flags/safe_alternatives/approval_checklist/risk_assessment")
+    description: str = Field(description="Brief description of the tool")
+    content: List[str] = Field(description="Tool content items")
+    display_format: str = Field(description="checklist/comparison_table/flowchart/guide")
+    priority: str = Field(description="high/medium/low priority level")
+    last_updated: str = Field(description="Last update date")
+    usage_context: str = Field(description="When and how to use this tool")
 
 class TrendingIntelligence(BaseModel):
-    """Market intelligence and trending information"""
-    trend_type: str = Field(description="Type: rising_claims, declining_claims, regulatory_changes, competitor_moves")
-    industry_specific: bool = Field(description="True if specific to user's industry")
-    items: List[TrendItem] = Field(description="List of trend items")
-    last_updated: str = Field(description="When this intelligence was gathered")
-    confidence_level: str = Field(description="Confidence level: high, medium, low based on source quality")
-    geographic_scope: str = Field(description="Geographic relevance: global, regional, country-specific")
-
-class WorkflowStep(BaseModel):
-    """Individual step in an approval workflow"""
-    step_name: str = Field(description="Name of the workflow step")
-    when_required: str = Field(description="When this step is required")
-    estimated_time: str = Field(description="Expected time to complete")
-    required_information: List[str] = Field(description="Information needed to complete this step")
-    responsible_role: str = Field(description="Who is responsible for this step")
+    """Market intelligence about sustainability trends"""
+    trend_id: str = Field(description="Unique trend identifier")
+    trend_name: str = Field(description="Name of the trend")
+    trend_type: str = Field(description="rising_claims/declining_claims/regulatory_changes")
+    description: str = Field(description="Detailed trend description")
+    industry_impact: str = Field(description="Impact on the specific industry")
+    industry_specific: bool = Field(description="Whether trend is industry-specific")
+    examples: List[str] = Field(description="Real market examples")
+    implications: List[str] = Field(description="Business implications")
+    recommended_actions: List[str] = Field(description="Recommended actions for marketing teams")
+    source_references: List[str] = Field(description="Sources for this intelligence")
 
 class CommunicationTemplate(BaseModel):
-    """Ready-to-use communication template"""
-    template_type: str = Field(description="Type: email_legal_review, vendor_brief, internal_approval, crisis_response")
-    recipient_role: str = Field(description="Target recipient: legal_team, agency_partner, c_suite, media")
-    subject_line: str = Field(description="Pre-written subject line")
-    body_template: str = Field(description="Email/document body with [placeholders] for customization")
-    required_attachments: List[str] = Field(description="List of attachments typically needed")
-    urgency_level: str = Field(description="Urgency: routine, urgent, crisis")
-    customization_notes: str = Field(description="Notes on how to adapt for specific situations")
-    compliance_basis: str = Field(description="Reference to related compliance guidance", default="")
+    """Communication template for business processes"""
+    template_id: str = Field(description="Unique template identifier")
+    template_name: str = Field(description="Template name")
+    template_type: str = Field(description="email_legal_review/vendor_brief/internal_approval/crisis_response")
+    recipient_role: str = Field(description="legal_team/agency_partner/c_suite/media")
+    urgency_level: str = Field(description="routine/urgent/crisis")
+    subject_line: str = Field(description="Email subject line or document title")
+    template_content: str = Field(description="Full template content with placeholders")
+    usage_instructions: List[str] = Field(description="How to use this template")
+    customization_notes: List[str] = Field(description="What to customize for each use")
+    approval_required: bool = Field(description="Whether approval is required before use")
 
 class RoleSpecificGuide(BaseModel):
-    """Guidance tailored to specific marketing roles"""
-    role: str = Field(description="Target role: content_creator, campaign_manager, brand_manager, social_media_manager")
-    daily_checklist: List[str] = Field(description="Daily checklist items for this role")
-    approval_workflow: List[WorkflowStep] = Field(description="Approval workflow steps for this role")
-    common_mistakes: List[str] = Field(description="Common mistakes specific to this role")
-    escalation_triggers: List[str] = Field(description="When this role should escalate to legal/compliance")
-    success_metrics: List[str] = Field(description="How this role should measure sustainability messaging success")
-    tools_and_resources: List[str] = Field(description="Recommended tools and resources for this role")
-    relevant_trends: List[str] = Field(description="Trend IDs most relevant to this role", default_factory=list)
-
-# ============================================================================
-# ENHANCED FEEDBACK MODEL
-# ============================================================================
+    """Role-specific guidance for different team members"""
+    guide_id: str = Field(description="Unique guide identifier")
+    role: str = Field(description="content_creator/campaign_manager/brand_manager")
+    role_title: str = Field(description="Human-readable role title")
+    responsibilities: List[str] = Field(description="Key responsibilities for this role")
+    daily_checklist: List[str] = Field(description="Daily compliance checklist")
+    escalation_triggers: List[str] = Field(description="When to escalate issues")
+    tools_and_resources: List[str] = Field(description="Tools and resources for this role")
+    common_mistakes: List[str] = Field(description="Common mistakes to avoid")
+    best_practices: List[str] = Field(description="Role-specific best practices")
+    success_metrics: List[str] = Field(description="How success is measured in this role")
 
 class PersonalizedFeedback(BaseModel):
-    """Enhanced personalized feedback including toolkit guidance"""
-    # EXISTING FIELDS (keep for backward compatibility)
-    role_specific_tips: List[str] = Field(description="Tips specific to user's role")
+    """Personalized feedback for the learner"""
+    role_specific_tips: List[str] = Field(description="Tips specific to role")
     team_training_recommendations: List[str] = Field(description="Recommendations for training the team")
     implementation_strategies: List[str] = Field(description="Strategies for implementing learnings")
     next_steps: List[str] = Field(description="Recommended next steps for continued learning")
     additional_resources: List[str] = Field(description="Additional resources for further learning")
-    
-    # NEW TOOLKIT FIELDS
-    priority_quick_references: List[str] = Field(description="Which quick reference tools to focus on first", default_factory=list)
-    recommended_templates: List[str] = Field(description="Which communication templates they'll use most", default_factory=list)
-    industry_intelligence_focus: List[str] = Field(description="Which market trends matter most to them", default_factory=list)
-    team_collaboration_guidance: str = Field(description="How to share these learnings with their team", default="")
-    success_timeline: str = Field(description="When to expect results from implementation", default="")
-    integration_priority: str = Field(description="Which toolkit elements to implement first", default="")
 
-# ============================================================================
-# UPDATED COMPREHENSIVE REPORT (Option 2 - includes both old and new)
-# ============================================================================
+# ===== COMPREHENSIVE TRAINING REPORT (TOOLKIT ONLY) ===== #
 
 class ComprehensiveTrainingReport(BaseModel):
-    """Complete sustainability training session report - Enhanced with toolkit"""
-    # EXISTING IDENTIFICATION FIELDS
+    """Complete sustainability training toolkit - No assessments/tests"""
     session_id: str = Field(description="Training session identifier")
     timestamp: str = Field(description="Session timestamp")
     learner_profile: str = Field(description="Learner profile summary")
     
-    # EXISTING CORE CONTENT (unchanged)
+    # Core Training Components
     scenario: SustainabilityScenario = Field(description="Business scenario used in training")
     problematic_analysis: ProblematicMessageAnalysis = Field(description="Analysis of problematic messages")
     best_practices: BestPracticeGuidance = Field(description="Best practice guidance and corrections")
     
-    # LEGACY ASSESSMENT (keeping for now - Option 2)
-    assessment_questions: List[AssessmentQuestion] = Field(
-        description="Legacy assessment questions - will be deprecated", 
-        default_factory=list
-    )
+    # Business Toolkit Components
+    quick_reference_tools: List[QuickReferenceItem] = Field(description="Quick reference tools for daily use")
+    market_intelligence: List[TrendingIntelligence] = Field(description="Current market intelligence")
+    communication_templates: List[CommunicationTemplate] = Field(description="Business communication templates")
+    role_specific_guides: List[RoleSpecificGuide] = Field(description="Role-specific guidance")
     
-    # NEW TOOLKIT COMPONENTS
-    quick_reference_tools: List[QuickReferenceItem] = Field(
-        description="Quick reference tools for daily use",
-        default_factory=list
-    )
-    market_intelligence: List[TrendingIntelligence] = Field(
-        description="Current market trends and intelligence",
-        default_factory=list
-    )
-    communication_templates: List[CommunicationTemplate] = Field(
-        description="Ready-to-use communication templates",
-        default_factory=list
-    )
-    role_specific_guides: List[RoleSpecificGuide] = Field(
-        description="Guidance tailored to specific roles",
-        default_factory=list
-    )
-    
-    # ENHANCED FEEDBACK
-    personalized_feedback: PersonalizedFeedback = Field(description="Enhanced personalized feedback and recommendations")
-    
-    # EXISTING SUMMARY FIELDS
+    # Additional Components (NO TESTS/ASSESSMENTS)
+    personalized_feedback: PersonalizedFeedback = Field(description="Personalized feedback and recommendations")
     key_takeaways: List[str] = Field(description="Key takeaways from the training session")
     compliance_checklist: List[str] = Field(description="Checklist for ensuring message compliance")
     sources_used: List[SourceReference] = Field(
         default_factory=list,
-        description="All sources referenced during the training session, organized by agent and type"
+        description="All sources referenced during the training session"
     )
-    
-    # NEW METADATA
-    toolkit_version: str = Field(description="Version of toolkit components", default="1.0")
-    report_format: str = Field(description="Report format: legacy, toolkit, hybrid", default="hybrid")
-
-# ============================================================================
-# CREWAI CLASS (unchanged logic, updated models available)
-# ============================================================================
 
 @CrewBase
 class Sustainability():
-    """Sustainability Messaging Training Crew"""
+    """Sustainability Messaging Training Crew - Toolkit Focus"""
     
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
@@ -240,18 +173,15 @@ class Sustainability():
     def __init__(self) -> None:
         self.user_preferences = self._load_user_preferences()
         self._ensure_output_directory()
-        # Initialize CrewAI search tool
         self.search_tool = CustomSerperTool()
         
     def _load_user_preferences(self):
         """Load user preferences from knowledge folder"""
         try:
-            # Use absolute path for web deployment
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
             preferences_path = os.path.join(project_root, 'knowledge', 'user_preference.txt')
             
-            # Try multiple possible paths for different deployment scenarios
             possible_paths = [
                 preferences_path,
                 os.path.join(current_dir, '..', '..', 'knowledge', 'user_preference.txt'),
@@ -263,7 +193,6 @@ class Sustainability():
                     with open(path, 'r', encoding='utf-8') as file:
                         return file.read()
             
-            # If no file found, return default
             print("⚠️ Warning: user_preference.txt not found, using defaults")
             return self._get_default_preferences()
             
@@ -329,7 +258,6 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
     
     @task
     def scenario_creation_task(self) -> Task:
-        # Include user preferences in the task context
         task_config = self.tasks_config['scenario_creation_task'].copy()
         task_config['description'] = f"""
         {task_config['description']}
@@ -365,13 +293,13 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
     
     @task
     def assessment_and_feedback_task(self) -> Task:
-        # Make output file optional for web deployment
+        """Generate business toolkit (no assessments/tests)"""
         output_file = None
         try:
             if os.path.exists('outputs') or os.makedirs('outputs', exist_ok=True):
-                output_file = 'outputs/sustainability_training_session.json'
+                output_file = 'outputs/sustainability_toolkit.json'
         except:
-            pass  # Skip file output if not possible in web environment
+            pass
         
         return Task(
             config=self.tasks_config['assessment_and_feedback_task'],
@@ -389,6 +317,6 @@ Training_Goal: Capacitate team members on sustainability messaging compliance"""
             tasks=self.tasks,
             process=Process.sequential,
             verbose=True,
-            memory=False,  # Disabled to avoid ChromaDB warnings for MVP
-            output_log_file=None  # Disable file logging for web deployment
+            memory=False,
+            output_log_file=None
         )
