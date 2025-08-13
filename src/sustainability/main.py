@@ -8,8 +8,8 @@ from datetime import datetime
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
-def save_simple_report(result, session_id):
-    """Save a simple report - Web environment compatible"""
+def save_business_toolkit(result, session_id):
+    """Save a business toolkit report - Web environment compatible"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     # Create outputs directory if possible
@@ -24,17 +24,17 @@ def save_simple_report(result, session_id):
     
     if outputs_dir:
         # Save as text file
-        txt_file = f'{outputs_dir}/training_report_{timestamp}.txt'
+        txt_file = f'{outputs_dir}/business_toolkit_{timestamp}.txt'
         try:
             with open(txt_file, 'w', encoding='utf-8') as f:
-                f.write(f"Sustainability Training Report\n")
+                f.write(f"Sustainability Business Toolkit\n")
                 f.write(f"Session: {session_id}\n")
-                f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write("="*50 + "\n\n")
                 f.write(str(result))
-            print(f"📄 Report saved: {txt_file}")
+            print(f"📄 Business toolkit saved: {txt_file}")
         except (OSError, PermissionError) as e:
-            print(f"⚠️ Could not save text report: {e}")
+            print(f"⚠️ Could not save toolkit file: {e}")
         
         # Try to save structured data if available
         try:
@@ -43,16 +43,43 @@ def save_simple_report(result, session_id):
                 if hasattr(last_task, 'pydantic') and last_task.pydantic:
                     json_file = f'{outputs_dir}/structured_data_{timestamp}.json'
                     with open(json_file, 'w', encoding='utf-8') as f:
+                        # Updated to use model_dump() instead of deprecated dict()
                         json.dump(last_task.pydantic.model_dump(), f, indent=2, ensure_ascii=False)
                     print(f"📊 Structured data saved: {json_file}")
+                    
+                    # Show toolkit summary
+                    data = last_task.pydantic.model_dump()
+                    toolkit_counts = {
+                        'quick_reference_tools': len(data.get('quick_reference_tools', [])),
+                        'market_intelligence': len(data.get('market_intelligence', [])),
+                        'communication_templates': len(data.get('communication_templates', [])),
+                        'role_specific_guides': len(data.get('role_specific_guides', []))
+                    }
+                    
+                    total_toolkit = sum(toolkit_counts.values())
+                    assessment_count = len(data.get('assessment_questions', []))
+                    
+                    print(f"🛠️ Toolkit Summary:")
+                    for component, count in toolkit_counts.items():
+                        status = '✅' if count > 0 else '⚠️'
+                        print(f"   {status} {component}: {count} items")
+                    
+                    print(f"📈 Total business tools: {total_toolkit}")
+                    print(f"📝 Legacy assessment questions: {assessment_count}")
+                    
+                    if total_toolkit > 0:
+                        print("🎉 Business toolkit generation successful!")
+                    else:
+                        print("⚠️ No toolkit components generated - check configuration")
+                        
         except Exception as e:
             print(f"⚠️ Could not save structured data: {e}")
     
     return True
 
 def run():
-    """Run the crew - Web environment compatible"""
-    session_id = f"TRAIN_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    """Run the business toolkit generation crew - Web environment compatible"""
+    session_id = f"TOOLKIT_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     
     inputs = {
         'user_industry': 'Marketing Agency',
@@ -62,16 +89,19 @@ def run():
     }
     
     try:
-        print("🌱 Starting Sustainability Training...")
+        print("🛠️ Starting Sustainability Business Toolkit Generation...")
         print(f"Session: {session_id}")
+        print("📋 Creating: Quick reference tools, templates, guides, and market intelligence")
+        print("-" * 60)
         
         # Import here to avoid issues if running in web environment
         from sustainability.crew import Sustainability
         
         result = Sustainability().crew().kickoff(inputs=inputs)
         
-        print("✅ Training completed!")
-        save_simple_report(result, session_id)
+        print("-" * 60)
+        print("✅ Business toolkit generation completed!")
+        save_business_toolkit(result, session_id)
         
         return result
         
@@ -79,10 +109,10 @@ def run():
         print(f"❌ Error: {e}")
         import traceback
         print(f"Full traceback: {traceback.format_exc()}")
-        raise Exception(f"An error occurred while running the crew: {e}")
+        raise Exception(f"An error occurred while generating the business toolkit: {e}")
 
 def train():
-    """Training mode entry point"""
+    """Business toolkit generation mode entry point"""
     return run()
 
 def replay():
@@ -92,7 +122,7 @@ def replay():
 
 def test():
     """Test mode entry point"""
-    print("🧪 Running test mode...")
+    print("🧪 Running business toolkit generation test...")
     try:
         from sustainability.crew import Sustainability
         
@@ -101,12 +131,12 @@ def test():
             'user_industry': 'Technology',
             'regional_regulations': 'EU Green Claims Directive',
             'current_year': '2025',
-            'session_id': 'TEST_SESSION'
+            'session_id': 'TEST_TOOLKIT_SESSION'
         }
         
         print("✅ Sustainability crew imported successfully")
         print("✅ Test inputs created successfully")
-        print("🎯 Test completed - ready for web deployment")
+        print("🎯 Test completed - ready for business toolkit generation")
         
         return True
         

@@ -119,7 +119,7 @@ class PanelCallbackHandler:
         elif "practice" in agent_name.lower():
             summary = "✅ Best practice corrections provided with regulatory guidance"
         elif "assessment" in agent_name.lower():
-            summary = "✅ Comprehensive training report generated with personalized feedback"
+            summary = "✅ Business toolkit generated with templates, guides, and market intelligence"
         else:
             summary = "✅ Analysis completed successfully"
             
@@ -137,40 +137,53 @@ class PanelCallbackHandler:
         self.task_count = 0
         self.completed_tasks = 0
         
-        message = f"""🌱 **Sustainability Training Session Started**
+        message = f"""🌱 **Sustainability Business Toolkit Generation Started**
 
 **Session ID:** {self.session_id}
 **Industry Focus:** {session_info.get('user_industry', 'N/A')}
 **Regulatory Framework:** {session_info.get('regional_regulations', 'N/A')}
 **Difficulty Level:** {session_info.get('difficulty_level', 'N/A')}
 
-**Training Plan:**
+**Toolkit Creation Plan:**
 1. 🏢 Create realistic business scenario
 2. ⚠️ Identify problematic messaging patterns  
 3. ✅ Develop compliant alternatives
-4. 📝 Generate assessment and feedback
+4. 🛠️ Generate business toolkit and templates
 
-Please wait while our AI agents work together to create your personalized training content..."""
+**What You'll Get:**
+- 🔍 Quick reference tools and checklists
+- 📊 Current market intelligence reports
+- 📧 Ready-to-use communication templates  
+- 👥 Role-specific implementation guides
+
+Please wait while our AI agents work together to create your personalized business toolkit..."""
         
         self.send_message(message, user="System", message_type="session")
     
     def on_session_complete(self, results: Any):
         """Called when the entire training session is complete"""
-        message = f"""🎉 **Training Session Completed Successfully!**
+        message = f"""🎉 **Business Toolkit Generation Completed Successfully!**
 
 📊 **Session Summary:**
-- ✅ All 4 training modules completed
-- 📋 Comprehensive report generated
-- 🎯 Personalized feedback provided
-- 📚 Assessment questions created
+- ✅ All 4 toolkit modules completed
+- 🛠️ Business toolkit generated
+- 🎯 Personalized implementation guidance provided
+- 📧 Communication templates and guides created
+
+**Your Toolkit Includes:**
+- 🔍 Quick reference tools for daily use
+- 📊 Market intelligence and trend analysis
+- 📧 Communication templates for legal, vendors, and internal teams
+- 👥 Role-specific guides for marketing professionals
 
 **Next Steps:**
-1. Review the detailed training report above
-2. Use the download buttons to save your results
-3. Share insights with your team
-4. Implement the compliance recommendations
+1. Download your comprehensive business toolkit using the buttons
+2. Review the quick reference tools for immediate implementation
+3. Use the communication templates with your team
+4. Follow the role-specific guides for daily operations
+5. Check the sources section for additional research
 
-Thank you for using our AI-powered sustainability training system! 🌱"""
+Thank you for using our AI-powered sustainability toolkit generator! 🌱"""
         
         self.send_message(message, user="System", message_type="task_complete")
 
@@ -198,8 +211,18 @@ def print_task_output(task_output: TaskOutput) -> TaskOutput:
                     # Best practices task
                     correction_count = len(data.get('corrected_messages', []))
                     output_summary = f"Provided {correction_count} corrected messages with compliance guidance"
+                elif 'quick_reference_tools' in data or 'communication_templates' in data:
+                    # NEW: Toolkit task
+                    toolkit_counts = {
+                        'quick_reference_tools': len(data.get('quick_reference_tools', [])),
+                        'market_intelligence': len(data.get('market_intelligence', [])),
+                        'communication_templates': len(data.get('communication_templates', [])),
+                        'role_specific_guides': len(data.get('role_specific_guides', []))
+                    }
+                    total_items = sum(toolkit_counts.values())
+                    output_summary = f"Generated comprehensive business toolkit with {total_items} tools and templates"
                 elif 'assessment_questions' in data:
-                    # Assessment task
+                    # Legacy assessment task (should not happen anymore)
                     question_count = len(data.get('assessment_questions', []))
                     output_summary = f"Generated comprehensive report with {question_count} assessment questions"
                 else:

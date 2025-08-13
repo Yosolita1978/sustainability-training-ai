@@ -947,38 +947,49 @@ class SustainabilityPanelApp(param.Parameterized):
                 if hasattr(final_task, 'pydantic') and final_task.pydantic:
                     data = final_task.pydantic.model_dump()
                     
-                    # Extract key metrics
+                    # Extract key metrics for toolkit
                     scenario = data.get('scenario', {})
-                    problematic_analysis = data.get('problematic_analysis', {})
-                    assessment_questions = data.get('assessment_questions', [])
-                    sources_used = data.get('sources_used', [])
                     
+                    # Count toolkit components
+                    toolkit_counts = {
+                        'quick_reference_tools': len(data.get('quick_reference_tools', [])),
+                        'market_intelligence': len(data.get('market_intelligence', [])),
+                        'communication_templates': len(data.get('communication_templates', [])),
+                        'role_specific_guides': len(data.get('role_specific_guides', []))
+                    }
+                    
+                    sources_used = data.get('sources_used', [])
                     company_name = scenario.get('company_name', 'Example Company')
-                    problem_count = len(problematic_analysis.get('problematic_messages', []))
-                    question_count = len(assessment_questions)
+                    
+                    total_toolkit_items = sum(toolkit_counts.values())
                     source_count = len(sources_used)
                     
-                    summary = f"""📊 **Training Results Summary**
+                    summary = f"""📊 **Business Toolkit Generated Successfully**
 
 **Scenario Created:** {company_name}
 **Industry:** {scenario.get('industry', 'N/A')}
-**Problems Identified:** {problem_count} messaging issues
-**Assessment Questions:** {question_count} knowledge checks
-**Sources Referenced:** {source_count} research sources
-**Training Duration:** Complete 4-module course
 
-**Next Steps:**
-1. ⬇️ Download your detailed report using the buttons on the left
-2. 📚 Review the assessment questions and explanations
-3. 🎯 Implement the compliance recommendations
-4. 📖 Check the sources section for additional research
-5. 👥 Share insights with your team"""
+**🛠️ Toolkit Components Created:**
+- 🔍 Quick Reference Tools: {toolkit_counts['quick_reference_tools']} items
+- 📊 Market Intelligence: {toolkit_counts['market_intelligence']} reports
+- 📧 Communication Templates: {toolkit_counts['communication_templates']} templates
+- 👥 Role-Specific Guides: {toolkit_counts['role_specific_guides']} guides
+
+**📚 Research Sources:** {source_count} current sources referenced
+**📈 Total Business Tools:** {total_toolkit_items} ready-to-use items
+
+**🎯 Next Steps:**
+1. ⬇️ Download your business toolkit using the buttons on the left
+2. 📋 Review the quick reference tools for immediate use
+3. 📧 Implement the communication templates with your team
+4. 🎯 Follow the role-specific guidance for daily operations
+5. 📖 Check the sources section for additional research"""
                     
                     self.chat_interface.send(summary, user="Results", respond=False)
                     
         except Exception as e:
             print(f"Error showing results summary: {e}")
-            self.chat_interface.send("✅ Training completed! Use the download buttons to access your results.", user="System", respond=False)
+            self.chat_interface.send("✅ Business toolkit generation completed! Use the download buttons to access your results.", user="System", respond=False)
     
     def download_markdown_report(self, event):
         """Download the training report as markdown - Web optimized with better encoding"""
@@ -996,7 +1007,7 @@ class SustainabilityPanelApp(param.Parameterized):
                     
                     # Create download filename
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = f"sustainability_training_report_{timestamp}.md"
+                    filename = f"sustainability_business_toolkit_{timestamp}.md"
                     
                     # Safer encoding approach for web deployment
                     try:
@@ -1006,8 +1017,8 @@ class SustainabilityPanelApp(param.Parameterized):
                         
                         download_html = f"""
                         <div class="download-widget" style="margin: 20px 0; padding: 25px; border: 2px solid #10b981; border-radius: 12px; background: linear-gradient(135deg, #f0fdfa, #ecfdf5); text-align: center; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-                            <h3 style="color: #047857; margin-bottom: 15px; font-size: 1.25rem; font-weight: 700;">📄 Training Report Ready!</h3>
-                            <p style="margin-bottom: 20px; color: #374151; line-height: 1.6;">Click the button below to download your comprehensive sustainability training report.</p>
+                            <h3 style="color: #047857; margin-bottom: 15px; font-size: 1.25rem; font-weight: 700;">📄 Business Toolkit Ready!</h3>
+                            <p style="margin-bottom: 20px; color: #374151; line-height: 1.6;">Click the button below to download your comprehensive sustainability business toolkit.</p>
                             <button onclick="downloadReportSafe()" 
                                     style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px 30px; 
                                            border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;
@@ -1087,7 +1098,7 @@ class SustainabilityPanelApp(param.Parameterized):
                     
                     download_widget = pn.pane.HTML(download_html, sizing_mode="stretch_width")
                     
-                    self.chat_interface.send("📄 **Training Report Generated Successfully!**", user="System", respond=False)
+                    self.chat_interface.send("📄 **Business Toolkit Generated Successfully!**", user="System", respond=False)
                     self.chat_interface.send(download_widget, user="Download", respond=False)
                     
         except Exception as e:
@@ -1107,26 +1118,32 @@ class SustainabilityPanelApp(param.Parameterized):
 • Go to **https://www.pdfforge.org/online/en/markdown-to-pdf**
 • Upload your .md file or paste the content
 • Click "Convert to PDF"
-• Download your professionally formatted PDF report
+• Download your professionally formatted PDF toolkit
 
 
-Your report contains professional formatting that will look great as a PDF! 🎯""", 
+Your business toolkit contains professional formatting that will look great as a PDF! 🎯""", 
             user="PDF Help", 
             respond=False
         )
     
     def format_results_as_markdown(self, data: Dict[str, Any]) -> str:
-        """Format training results as markdown report with safe encoding - PDF-friendly with comprehensive sources section"""
+        """Format training results as markdown report - Business Toolkit Version"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Extract data sections with safe fallbacks
         scenario = data.get('scenario', {})
         problematic_analysis = data.get('problematic_analysis', {})
         best_practices = data.get('best_practices', {})
-        assessment_questions = data.get('assessment_questions', [])
+        
+        # NEW TOOLKIT COMPONENTS
+        quick_reference_tools = data.get('quick_reference_tools', [])
+        market_intelligence = data.get('market_intelligence', [])
+        communication_templates = data.get('communication_templates', [])
+        role_specific_guides = data.get('role_specific_guides', [])
+        
         personalized_feedback = data.get('personalized_feedback', {})
         key_takeaways = data.get('key_takeaways', [])
-        sources_used = data.get('sources_used', [])  # NEW: Get sources from report
+        sources_used = data.get('sources_used', [])
         
         # Helper function to safely format lists
         def safe_format_list(items, prefix="- "):
@@ -1134,7 +1151,6 @@ Your report contains professional formatting that will look great as a PDF! 🎯
                 return "- None specified\n"
             result = ""
             for item in items:
-                # Clean any problematic characters
                 clean_item = str(item).replace('\n', ' ').replace('\r', ' ')
                 result += f"{prefix}{clean_item}\n"
             return result
@@ -1145,7 +1161,7 @@ Your report contains professional formatting that will look great as a PDF! 🎯
                 return default
             return str(text).replace('\n', ' ').replace('\r', ' ')
         
-        markdown = f"""# Sustainability Training Report
+        markdown = f"""# Sustainability Marketing Toolkit
 
 **Generated:** {timestamp}
 **Session ID:** {safe_format_text(data.get('session_id', 'N/A'))}
@@ -1155,7 +1171,15 @@ Your report contains professional formatting that will look great as a PDF! 🎯
 
 ## Executive Summary
 
-This comprehensive sustainability training session was designed to enhance understanding of compliant sustainability messaging and prevent greenwashing violations. The training covers industry-specific scenarios, regulatory compliance requirements, and practical application strategies.
+This comprehensive sustainability marketing toolkit provides immediately actionable tools, templates, and guidance for compliant sustainability messaging. The toolkit is based on current market research, regulatory requirements, and industry best practices.
+
+**Toolkit Components:**
+- 🔍 {len(quick_reference_tools)} Quick Reference Tools
+- 📊 {len(market_intelligence)} Market Intelligence Reports  
+- 📧 {len(communication_templates)} Communication Templates
+- 👥 {len(role_specific_guides)} Role-Specific Guides
+
+---
 
 ## Business Scenario
 
@@ -1183,7 +1207,7 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         
-        # Add problematic messages with safe formatting
+        # Add problematic messages with safe formatting (keep existing)
         for i, msg in enumerate(problematic_analysis.get('problematic_messages', []), 1):
             markdown += f"""### Example {i}: {safe_format_text(msg.get('id', f'Message {i}'))}
 
@@ -1210,7 +1234,7 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         
-        # Add corrected messages with safe formatting
+        # Add corrected messages with safe formatting (keep existing)
         for i, correction in enumerate(best_practices.get('corrected_messages', []), 1):
             markdown += f"""### Correction {i}
 
@@ -1232,35 +1256,162 @@ This comprehensive sustainability training session was designed to enhance under
 
 """
         
-        markdown += """## Knowledge Assessment
+        # NEW TOOLKIT SECTIONS REPLACE ASSESSMENT QUESTIONS
+        markdown += """## 🔍 Quick Reference Tools
 
 """
         
-        # Add assessment questions with safe formatting
-        for i, question in enumerate(assessment_questions, 1):
-            markdown += f"""### Question {i}
-
-**Type:** {safe_format_text(question.get('type', 'N/A'))} | **Difficulty:** {safe_format_text(question.get('difficulty_level', 'N/A'))}
-
-**Question:** {safe_format_text(question.get('question', 'N/A'))}
+        if quick_reference_tools:
+            # Group by category for better organization
+            categories = {}
+            for tool in quick_reference_tools:
+                category = tool.get('category', 'other')
+                if category not in categories:
+                    categories[category] = []
+                categories[category].append(tool)
+            
+            for category, tools in categories.items():
+                category_title = category.replace('_', ' ').title()
+                markdown += f"""### {category_title}
 
 """
-            if question.get('options'):
-                markdown += "**Options:**\n"
-                markdown += safe_format_list(question.get('options', []))
-                markdown += "\n"
-            
-            markdown += f"""**Correct Answer:** {safe_format_text(question.get('correct_answer', 'N/A'))}
+                for tool in tools:
+                    priority_icon = "🔴" if tool.get('priority') == 'high' else "🟡" if tool.get('priority') == 'medium' else "🟢"
+                    markdown += f"""#### {priority_icon} {safe_format_text(tool.get('title', 'Untitled'))}
 
-**Explanation:** {safe_format_text(question.get('explanation', 'N/A'))}
+**Format:** {safe_format_text(tool.get('display_format', 'N/A'))}
+**Priority:** {safe_format_text(tool.get('priority', 'N/A'))}
 
-**Learning Objective:** {safe_format_text(question.get('learning_objective', 'N/A'))}
+"""
+                    content_list = tool.get('content', [])
+                    if tool.get('display_format') == 'checklist':
+                        markdown += "**Checklist:**\n"
+                        markdown += safe_format_list(content_list, "- [ ] ")
+                    else:
+                        markdown += "**Content:**\n"
+                        markdown += safe_format_list(content_list)
+                    
+                    markdown += "\n---\n\n"
+        else:
+            markdown += "No quick reference tools available.\n\n"
+        
+        markdown += """## 📊 Market Intelligence
+
+"""
+        
+        if market_intelligence:
+            for intel in market_intelligence:
+                intel_title = safe_format_text(intel.get('trend_type', 'Market Trends')).replace('_', ' ').title()
+                confidence = safe_format_text(intel.get('confidence_level', 'Unknown'))
+                updated = safe_format_text(intel.get('last_updated', 'Unknown'))
+                
+                markdown += f"""### {intel_title}
+
+**Confidence Level:** {confidence} | **Last Updated:** {updated}
+**Geographic Scope:** {safe_format_text(intel.get('geographic_scope', 'N/A'))}
+
+"""
+                for item in intel.get('items', []):
+                    status_icon = "📈" if item.get('status') == 'rising' else "📉" if item.get('status') == 'declining' else "➡️"
+                    risk_icon = "🔴" if item.get('risk_level') == 'high' else "🟡" if item.get('risk_level') == 'medium' else "🟢"
+                    
+                    markdown += f"""#### {status_icon} {safe_format_text(item.get('name', 'Trend'))} {risk_icon}
+
+**Status:** {safe_format_text(item.get('status', 'N/A'))} | **Risk Level:** {safe_format_text(item.get('risk_level', 'N/A'))}
+
+**Description:** {safe_format_text(item.get('description', 'N/A'))}
+
+**Example:** {safe_format_text(item.get('example', 'N/A'))}
+
+**Recommendation:** {safe_format_text(item.get('recommendation', 'N/A'))}
+
+"""
+                markdown += "---\n\n"
+        else:
+            markdown += "No market intelligence available.\n\n"
+        
+        markdown += """## 📧 Communication Templates
+
+"""
+        
+        if communication_templates:
+            # Group by urgency level
+            urgency_order = ['crisis', 'urgent', 'routine']
+            for urgency in urgency_order:
+                urgency_templates = [t for t in communication_templates if t.get('urgency_level') == urgency]
+                if urgency_templates:
+                    urgency_icon = "🚨" if urgency == 'crisis' else "⚡" if urgency == 'urgent' else "📝"
+                    markdown += f"""### {urgency_icon} {urgency.title()} Communications
+
+"""
+                    for template in urgency_templates:
+                        template_type = safe_format_text(template.get('template_type', 'Unknown')).replace('_', ' ').title()
+                        recipient = safe_format_text(template.get('recipient_role', 'Unknown')).replace('_', ' ').title()
+                        
+                        markdown += f"""#### {template_type} - {recipient}
+
+**Subject Line:**
+{safe_format_text(template.get('subject_line', 'N/A'))}
+
+**Template:**
+{safe_format_text(template.get('body_template', 'N/A'))}
+
+**Required Attachments:**
+{safe_format_list(template.get('required_attachments', []))}
+
+**Customization Notes:**
+{safe_format_text(template.get('customization_notes', 'N/A'))}
 
 ---
 
 """
+        else:
+            markdown += "No communication templates available.\n\n"
         
-        markdown += """## Personalized Feedback
+        markdown += """## 👥 Role-Specific Guides
+
+"""
+        
+        if role_specific_guides:
+            for guide in role_specific_guides:
+                role_name = safe_format_text(guide.get('role', 'Unknown Role')).replace('_', ' ').title()
+                
+                markdown += f"""### {role_name}
+
+#### Daily Checklist
+{safe_format_list(guide.get('daily_checklist', []), '- [ ] ')}
+
+#### Approval Workflow
+"""
+                for i, step in enumerate(guide.get('approval_workflow', []), 1):
+                    markdown += f"""**Step {i}: {safe_format_text(step.get('step_name', 'Unknown'))}**
+- **When Required:** {safe_format_text(step.get('when_required', 'N/A'))}
+- **Estimated Time:** {safe_format_text(step.get('estimated_time', 'N/A'))}
+- **Responsible:** {safe_format_text(step.get('responsible_role', 'N/A'))}
+- **Required Information:** {', '.join(step.get('required_information', []))}
+
+"""
+                
+                markdown += f"""#### Common Mistakes to Avoid
+{safe_format_list(guide.get('common_mistakes', []))}
+
+#### Escalation Triggers
+{safe_format_list(guide.get('escalation_triggers', []))}
+
+#### Success Metrics
+{safe_format_list(guide.get('success_metrics', []))}
+
+#### Tools and Resources
+{safe_format_list(guide.get('tools_and_resources', []))}
+
+---
+
+"""
+        else:
+            markdown += "No role-specific guides available.\n\n"
+        
+        # ENHANCED FEEDBACK SECTION
+        markdown += """## Personalized Implementation Guidance
 
 ### Role-Specific Tips
 """
@@ -1275,6 +1426,24 @@ This comprehensive sustainability training session was designed to enhance under
 ### Implementation Strategies
 """
         markdown += safe_format_list(personalized_feedback.get('implementation_strategies', []))
+        
+        markdown += """
+### Priority Quick References
+"""
+        priority_refs = personalized_feedback.get('priority_quick_references', [])
+        if priority_refs:
+            markdown += safe_format_list(priority_refs)
+        else:
+            markdown += "- Focus on high-priority red flags checklist first\n- Implement safe word alternatives guide immediately\n"
+        
+        markdown += """
+### Recommended Templates
+"""
+        recommended_templates = personalized_feedback.get('recommended_templates', [])
+        if recommended_templates:
+            markdown += safe_format_list(recommended_templates)
+        else:
+            markdown += "- Start with legal review email template\n- Use vendor brief template for agency communications\n"
         
         markdown += """
 ### Next Steps
@@ -1292,12 +1461,12 @@ This comprehensive sustainability training session was designed to enhance under
         markdown += """
 ---
 
-## Compliance Checklist
+## Implementation Checklist
 
 """
         markdown += safe_format_list(data.get('compliance_checklist', []), "- [ ] ")
         
-        # NEW: Add comprehensive Sources section
+        # Sources section (keep existing)
         markdown += """
 ---
 
@@ -1308,25 +1477,14 @@ This training session referenced the following sources for research, regulatory 
 """
         
         if sources_used:
-            # Organize sources by type and agent
+            # Organize sources by type
             sources_by_type = {}
-            sources_by_agent = {}
-            
             for source in sources_used:
                 source_type = source.get('type', 'other')
-                used_by_agent = source.get('used_by_agent', 'unknown')
-                
-                # Group by type
                 if source_type not in sources_by_type:
                     sources_by_type[source_type] = []
                 sources_by_type[source_type].append(source)
-                
-                # Group by agent
-                if used_by_agent not in sources_by_agent:
-                    sources_by_agent[used_by_agent] = []
-                sources_by_agent[used_by_agent].append(source)
             
-            # Display by source type
             type_headers = {
                 'regulatory': '### Regulatory Sources',
                 'company_example': '### Company Examples and Case Studies',
@@ -1347,55 +1505,34 @@ This training session referenced the following sources for research, regulatory 
                     url = safe_format_text(source.get('url', 'No URL'))
                     description = safe_format_text(source.get('description', ''))
                     access_date = safe_format_text(source.get('access_date', 'Unknown'))
-                    used_by = safe_format_text(source.get('used_by_agent', 'Unknown'))
-                    query = safe_format_text(source.get('query', ''))
                     
                     markdown += f"{i}. **{title}**\n"
                     markdown += f"   - URL: {url}\n"
                     markdown += f"   - Accessed: {access_date}\n"
-                    markdown += f"   - Used by: {used_by.replace('_', ' ').title()}\n"
                     
                     if description and description != 'N/A':
                         markdown += f"   - Description: {description}\n"
-                    
-                    if query and query != 'N/A':
-                        markdown += f"   - Search Query: {query}\n"
                     
                     markdown += "\n"
                 
                 markdown += "---\n\n"
             
-            # Add source summary
             total_sources = len(sources_used)
-            unique_domains = len(set(source.get('url', '').split('/')[2] if source.get('url') and len(source.get('url', '').split('/')) > 2 else 'unknown' for source in sources_used))
-            agents_with_sources = len(set(source.get('used_by_agent', 'unknown') for source in sources_used))
-            
             markdown += f"""### Source Summary
 
 **Total Sources Referenced:** {total_sources}
-**Unique Domains:** {unique_domains}
-**AI Agents Contributing Sources:** {agents_with_sources}
 
 All sources were accessed during the training session and represent current information as of the session date.
 
 """
         else:
-            markdown += """### No Sources Available
-
-No source information was collected during this training session. This may indicate:
-- Sources were not properly tracked by the AI agents
-- The search tool encountered issues
-- The training ran in offline mode
-
-For future sessions, ensure proper source tracking is enabled.
-
-"""
+            markdown += "No source information was collected during this training session.\n\n"
         
         markdown += f"""
 ---
 
-*This report was generated by AI-powered sustainability training system on {timestamp}*
-*For questions or support, please contact your training administrator*
+*This business toolkit was generated by AI-powered sustainability training system on {timestamp}*
+*Ready for immediate implementation by marketing teams*
 """
         
         return markdown
