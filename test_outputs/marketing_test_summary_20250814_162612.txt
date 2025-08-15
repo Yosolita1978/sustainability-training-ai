@@ -1,0 +1,14 @@
+MARKETING COMPLIANCE PLATFORM TEST RESULTS
+==================================================
+
+Test Date: 2025-08-14 16:26:12
+Campaign: EcoTech Green Leadership Campaign 2025
+Company: EcoTech Solutions Inc
+Compliance Status: ComplianceStatus.REQUIRES_REVIEW
+Risk Level: ComplianceRiskLevel.MEDIUM
+
+EXECUTIVE SUMMARY:
+Marketing compliance analysis for EcoTech Green Leadership Campaign 2025 (brand_awareness campaign) reveals moderate compliance risk requiring targeted improvements. The campaign requires modifications for full compliance across 0 marketing channels including email_marketing, content_marketing. Comprehensive analysis of 0 sustainability claims resulted in 0 specific recommendations for compliance improvement. Target markets include US, EU, UK with budget tier classification of medium. Campaign objectives focus on Establish thought leadership in sustainable technology, Generate qualified leads for green IT solutions with evidence documentation available.
+
+KEY FINDINGS:
+1. Moderate compliance risk identified with manageable mitigation strategies

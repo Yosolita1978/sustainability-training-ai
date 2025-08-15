@@ -1,77 +1,281 @@
-# tasks.yaml — Pure Business Toolkit Version
-# Fully supports key toolkit outputs for business analysis, including:
-# quick_reference_tools, market_intelligence, communication_templates, role_specific_guides
+# tasks.yaml — Marketing-Focused Sustainability Compliance Workflow
+# Updated for brand awareness campaigns, email/content marketing compliance
+# Specialized workflow for marketing teams and agencies
 
-business_analysis_task:
+campaign_compliance_analysis:
   description: >
-    Run a complete sustainability business analysis for the company or selected dataset.
-    Includes benchmarking, operational review, opportunity identification, and toolkit generation.
-    Must produce all key deliverables for the business toolkit.
-  agent: business_toolkit_agent
+    Comprehensive compliance analysis for marketing campaigns with sustainability claims.
+    Focuses on brand awareness campaigns using email marketing and content marketing channels.
+    Analyzes all sustainability claim types with detailed risk assessment and evidence evaluation.
+    Provides specific compliance recommendations for marketing teams.
+  agent: marketing_compliance_agent
   input:
-    - company_profile
+    - marketing_campaign_profile
+    - campaign_content
+    - target_markets
+    - sustainability_claims
+    - evidence_documentation
+    - competitive_context
+  output:
+    - campaign_compliance_status
+    - claim_verification_results
+    - channel_specific_analysis
+    - risk_assessment_by_category
+    - evidence_adequacy_evaluation
+    - compliance_recommendations
+    - immediate_action_requirements
+  priority: high
+  expected_deliverables:
+    - Overall compliance status (compliant/requires_review/non_compliant)
+    - Risk level assessment (Low/Medium/High) for each claim and channel
+    - Detailed analysis of email marketing compliance (subject lines, content, CTAs)
+    - Content marketing compliance assessment (blogs, articles, whitepapers)
+    - Sustainability claim verification with substantiation requirements
+    - Evidence gap identification with specific documentation needs
+    - Regulatory requirement mapping by target market (US FTC, EU Green Claims, UK ASA)
+    - Marketing-specific compliance recommendations with implementation guidance
+  success_criteria:
+    - Complete analysis of all sustainability claims in campaign materials
+    - Channel-specific compliance assessment for email and content marketing
+    - Risk-based prioritization of compliance issues
+    - Actionable recommendations for marketing team implementation
+    - Professional documentation suitable for legal review
+
+marketing_compliance_review:
+  description: >
+    Detailed regulatory compliance review focusing on marketing-specific sustainability
+    regulations across target jurisdictions. Analyzes enforcement trends, penalty risks,
+    and market-specific compliance obligations for marketing campaigns.
+  agent: marketing_compliance_specialist
+  input:
+    - marketing_campaign_profile
+    - target_markets
+    - marketing_channels
     - industry_sector
-    - operations_data
+    - budget_tier
+    - regulatory_history
   output:
-    - business_benchmark
-    - opportunity_list
-    - operational_risk_list
-    - quick_reference_tools
-    - market_intelligence
-    - communication_templates
-    - role_specific_guides
+    - jurisdiction_specific_requirements
+    - marketing_regulation_analysis
+    - enforcement_risk_assessment
+    - penalty_exposure_evaluation
+    - compliance_obligation_calendar
+    - regulatory_monitoring_framework
   priority: high
+  expected_deliverables:
+    - US regulatory analysis (FTC Green Guides, CAN-SPAM for email marketing)
+    - EU regulatory requirements (Green Claims Directive, GDPR for email campaigns)
+    - UK compliance obligations (ASA guidelines, advertising standards)
+    - Marketing channel specific regulations (email marketing laws, content publishing standards)
+    - Recent enforcement action analysis relevant to sustainability marketing
+    - Penalty risk assessment with financial exposure estimates
+    - Compliance calendar with regulatory deadlines and requirements
+    - Market-specific documentation and disclosure requirements
+    - Ongoing regulatory monitoring and update protocols
+  success_criteria:
+    - Comprehensive regulatory mapping for all target markets
+    - Marketing-specific compliance requirements clearly documented
+    - Enforcement risk quantified with penalty exposure estimates
+    - Compliance obligations prioritized by urgency and impact
+    - Ongoing monitoring framework established for regulatory changes
 
-compliance_review_task:
+brand_positioning_strategy:
   description: >
-    Conduct a compliance review using local, regional, and international regulations.
-    Output actionable compliance recommendations and highlight critical violations or gaps.
-  agent: compliance_analysis_agent
+    Strategic development of compliant sustainability positioning for brand awareness
+    campaigns. Integrates compliance requirements with marketing effectiveness to create
+    authentic competitive advantages through regulatory-compliant environmental messaging.
+  agent: marketing_strategy_advisor
   input:
-    - company_profile
-    - jurisdiction
-    - operations_data
+    - marketing_campaign_profile
+    - campaign_compliance_status
+    - jurisdiction_specific_requirements
+    - competitive_landscape
+    - target_audience_analysis
+    - budget_constraints
   output:
-    - compliance_summary
-    - risk_gaps
-    - legal_recommendations
-  priority: high
-
-strategy_development_task:
-  description: >
-    Create a sustainability strategy roadmap based on insights from compliance
-    and business analysis tasks.
-    Prioritize actions with ROI, competitive positioning, and stakeholder impacts.
-  agent: strategy_recommendation_agent
-  input:
-    - business_benchmark
-    - compliance_summary
-    - opportunity_list
-  output:
-    - strategic_initiatives
-    - roi_analysis
-    - market_positioning
+    - sustainability_positioning_strategy
+    - compliant_messaging_framework
+    - channel_optimization_plan
+    - competitive_differentiation_approach
+    - roi_optimized_implementation
+    - brand_protection_strategy
   priority: medium
+  expected_deliverables:
+    - Core sustainability positioning that balances authenticity with compliance
+    - Email marketing strategy optimized for sustainability engagement and compliance
+    - Content marketing approach for thought leadership in sustainable business practices
+    - Competitive differentiation through authentic environmental messaging
+    - Channel-specific messaging adaptation for regulatory compliance
+    - ROI optimization framework for sustainability marketing investments
+    - Brand protection strategy against greenwashing accusations
+    - Implementation roadmap with compliance checkpoints
+    - Performance measurement framework integrating compliance and marketing metrics
+  success_criteria:
+    - Positioning strategy that enhances rather than conflicts with compliance
+    - Clear competitive advantage through authentic sustainability messaging
+    - Marketing effectiveness optimized within regulatory constraints
+    - Scalable approach suitable for budget tier and market scope
+    - Integration of compliance as competitive advantage rather than limitation
 
-report_compilation_task:
+detailed_compliance_report:
   description: >
-    Combine outputs from all previous tasks into the final executive report.
-    Include business KPIs, compliance insights, opportunities, recommended actions,
-    and all generated toolkit resources: quick reference tools, market intelligence,
-    communication templates, role-specific guides.
-    Must not include any test, quiz, or assessment.
-  agent: report_generator_agent
+    Comprehensive compilation of marketing compliance analysis into professional
+    documentation suitable for marketing teams, legal review, and executive decision-making.
+    Creates detailed implementation roadmaps with clear action items and responsibility
+    assignments for marketing campaign execution.
+  agent: marketing_report_compiler
   input:
-    - business_benchmark
-    - opportunity_list
-    - compliance_summary
-    - strategic_initiatives
-    - quick_reference_tools
-    - market_intelligence
-    - communication_templates
-    - role_specific_guides
+    - campaign_compliance_status
+    - jurisdiction_specific_requirements
+    - sustainability_positioning_strategy
+    - claim_verification_results
+    - risk_assessment_by_category
+    - compliance_recommendations
+    - evidence_adequacy_evaluation
+    - competitive_differentiation_approach
   output:
-    - formatted_markdown
-    - pdf_export
-    - json_export
+    - comprehensive_compliance_report
+    - executive_summary_document
+    - implementation_roadmap
+    - legal_review_package
+    - marketing_team_guidelines
+    - ongoing_monitoring_protocol
   priority: high
+  expected_deliverables:
+    - Executive summary with overall compliance status and strategic recommendations
+    - Detailed campaign compliance analysis with claim-by-claim verification
+    - Channel-specific compliance assessment (email marketing, content marketing)
+    - Risk assessment matrix with Low/Medium/High categorization across regulatory, reputational, operational, and financial dimensions
+    - Evidence evaluation with specific gaps and documentation requirements
+    - Jurisdiction-specific regulatory compliance framework
+    - Implementation roadmap with immediate (0-30 days), short-term (30-90 days), and long-term (90+ days) actions
+    - Marketing strategy integration with compliance-aligned messaging approaches
+    - Resource requirements and budget allocation recommendations
+    - Ongoing monitoring and compliance verification protocols
+    - Professional documentation suitable for legal review and executive presentation
+    - Marketing team operational guidelines with decision-making frameworks
+  success_criteria:
+    - Professional report quality suitable for legal and executive review
+    - Complete documentation of all compliance analysis and recommendations
+    - Clear implementation guidance with specific next steps and timelines
+    - Actionable marketing team guidelines for campaign execution
+    - Comprehensive audit trail for compliance decision-making
+    - Integration of compliance requirements with marketing strategy for optimal business outcomes
+
+# Supporting workflow tasks for enhanced marketing compliance
+
+campaign_content_audit:
+  description: >
+    Detailed audit of specific campaign content pieces including email templates,
+    blog posts, social media content, and website copy for sustainability claim
+    compliance and regulatory adherence.
+  agent: marketing_compliance_agent
+  input:
+    - campaign_content_inventory
+    - content_publication_schedule
+    - target_audience_segments
+    - distribution_channels
+  output:
+    - content_compliance_scorecard
+    - claim_substantiation_matrix
+    - content_modification_recommendations
+    - publication_approval_status
+  priority: medium
+  expected_deliverables:
+    - Individual content piece compliance assessment
+    - Sustainability claim verification for each content item
+    - Recommended modifications for non-compliant content
+    - Content approval workflow with compliance checkpoints
+    - Publication readiness assessment with risk mitigation
+  success_criteria:
+    - All campaign content assessed for compliance
+    - Clear approve/modify/reject recommendations for each piece
+    - Substantiation requirements mapped to content claims
+    - Content modification guidance that maintains marketing effectiveness
+
+competitor_compliance_monitoring:
+  description: >
+    Ongoing monitoring of competitor sustainability marketing practices to identify
+    industry compliance trends, competitive positioning opportunities, and potential
+    regulatory risk indicators in the market landscape.
+  agent: marketing_strategy_advisor
+  input:
+    - competitor_identification
+    - industry_sector
+    - target_markets
+    - monitoring_timeframe
+  output:
+    - competitor_compliance_landscape
+    - industry_risk_indicators
+    - positioning_opportunities
+    - regulatory_trend_analysis
+  priority: low
+  expected_deliverables:
+    - Competitor sustainability messaging analysis
+    - Industry compliance benchmark assessment
+    - Emerging risk pattern identification
+    - Competitive positioning opportunity mapping
+    - Market-wide regulatory trend analysis
+  success_criteria:
+    - Comprehensive competitor sustainability messaging database
+    - Industry compliance risk indicators identified
+    - Strategic positioning opportunities documented
+    - Ongoing monitoring framework established
+
+regulatory_update_integration:
+  description: >
+    Systematic integration of new regulatory developments into existing marketing
+    compliance frameworks, ensuring ongoing adherence to evolving sustainability
+    marketing regulations across target jurisdictions.
+  agent: marketing_compliance_specialist
+  input:
+    - regulatory_change_notifications
+    - current_compliance_framework
+    - active_campaigns
+    - target_jurisdictions
+  output:
+    - updated_compliance_requirements
+    - campaign_impact_assessment
+    - implementation_timeline
+    - training_requirements
+  priority: medium
+  expected_deliverables:
+    - Integration of new regulatory requirements into compliance framework
+    - Impact assessment on active and planned campaigns
+    - Updated compliance procedures and documentation
+    - Team training requirements for regulatory changes
+    - Timeline for implementing regulatory updates
+  success_criteria:
+    - New regulations fully integrated into compliance framework
+    - Campaign impact clearly assessed and addressed
+    - Team training completed for regulatory updates
+    - Compliance procedures updated and documented
+
+crisis_communication_planning:
+  description: >
+    Development of crisis communication protocols for potential sustainability
+    marketing compliance issues, including greenwashing accusations, regulatory
+    investigations, and public relations challenges related to environmental claims.
+  agent: marketing_strategy_advisor
+  input:
+    - campaign_risk_assessment
+    - stakeholder_mapping
+    - regulatory_exposure
+    - brand_reputation_factors
+  output:
+    - crisis_communication_framework
+    - stakeholder_response_protocols
+    - media_response_templates
+    - regulatory_response_procedures
+  priority: low
+  expected_deliverables:
+    - Crisis communication strategy for sustainability marketing issues
+    - Stakeholder communication protocols and message templates
+    - Media response procedures for greenwashing accusations
+    - Regulatory response framework for compliance inquiries
+    - Brand protection strategies during crisis situations
+  success_criteria:
+    - Comprehensive crisis communication plan developed
+    - Stakeholder response protocols clearly defined
+    - Media and regulatory response procedures documented
+    - Brand protection strategies integrated with crisis response

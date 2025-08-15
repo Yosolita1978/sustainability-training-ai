@@ -1,0 +1,12 @@
+MARKETING COMPLIANCE PLATFORM TEST RESULTS
+==================================================
+
+Test Date: 2025-08-14 16:01:08
+Campaign: EcoTech Green Leadership Campaign 2025
+Company: EcoTech Solutions Inc
+Compliance Status: requires_review
+Risk Level: medium
+
+EXECUTIVE SUMMARY:
+Marketing compliance analysis completed for EcoTech Green Leadership Campaign 2025
+

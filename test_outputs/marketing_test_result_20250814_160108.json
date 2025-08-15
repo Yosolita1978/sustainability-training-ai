@@ -1,0 +1,179 @@
+{
+  "marketing_compliance_report": {
+    "report_id": "MCR_20250814_160108",
+    "campaign_name": "EcoTech Green Leadership Campaign 2025",
+    "company_name": "EcoTech Solutions Inc",
+    "overall_compliance_status": "requires_review",
+    "overall_risk_level": "medium",
+    "executive_summary": "Marketing compliance analysis completed for EcoTech Green Leadership Campaign 2025",
+    "analysis_components": {
+      "claims_analyzed": 0,
+      "channels_analyzed": 0,
+      "recommendations_provided": 4,
+      "markets_covered": 2
+    }
+  },
+  "raw_analysis_data": {
+    "campaign_analysis": {
+      "overall_compliance_status": "high-risk",
+      "compliance_recommendations": {
+        "brand_awareness_campaign": [
+          "Implement pre-publication legal review process",
+          "Conduct substantiation review for all environmental claims",
+          "Develop channel-specific compliance guidelines",
+          "Create approved sustainability messaging framework",
+          "Establish ongoing monitoring for competitor practices"
+        ],
+        "email_marketing": [
+          "Add disclaimers for all environmental claims",
+          "Include links to substantiation evidence",
+          "Review subject line claims for FTC compliance",
+          "Implement A/B testing for compliant alternatives",
+          "Establish legal review process for sustainability emails"
+        ],
+        "content_marketing": [
+          "Add citations for all sustainability claims",
+          "Include methodology explanations for data claims",
+          "Consider adding sustainability disclaimer section",
+          "Reduce number of unsubstantiated claims",
+          "Implement fact-checking review process",
+          "Consider legal review before publication"
+        ],
+        "sustainability_claims": [
+          "Immediate legal review required",
+          "Modify or remove high-risk claims",
+          "Gather additional substantiation evidence",
+          "Obtain third-party verification for sustainability claims"
+        ]
+      },
+      "compliance_metadata": {
+        "task_name": "marketing_task",
+        "agent_name": "marketing_compliance_agent",
+        "analysis_date": "2025-08-14T15:59:24.916993",
+        "compliance_status": "requires_review",
+        "risk_level": "medium",
+        "analysis_type": "marketing_compliance"
+      }
+    },
+    "compliance_review": {
+      "campaign_name": "EcoTech Green Leadership Campaign 2025",
+      "channels_count": 2,
+      "claims_count": 3,
+      "markets_count": 3,
+      "budget_tier": "medium",
+      "compliance_metadata": {
+        "task_name": "marketing_task",
+        "agent_name": "marketing_compliance_specialist",
+        "analysis_date": "2025-08-14T16:00:01.589979",
+        "compliance_status": "requires_review",
+        "risk_level": "medium",
+        "analysis_type": "marketing_compliance"
+      }
+    },
+    "strategy_analysis": {
+      "comprehensive_compliance_report": {
+        "executive_summary": "Detailed Marketing Compliance Analysis and Recommendations:  1. **Strategic positioning:** Focus on brand authenticity and transparent sustainability communication. For your \"EcoTech Green Leadership Campaign 2025\", anchor your strategy on concrete data and certifications to substantiate your sustai",
+        "overall_compliance_status": "requires_review",
+        "risk_assessment": "high"
+      },
+      "compliance_metadata": {
+        "task_name": "marketing_task",
+        "agent_name": "marketing_strategy_advisor",
+        "analysis_date": "2025-08-14T16:00:43.805023",
+        "compliance_status": "requires_review",
+        "risk_level": "medium",
+        "analysis_type": "marketing_compliance"
+      }
+    },
+    "final_report": {
+      "comprehensive_compliance_report": {
+        "executive_summary": "A comprehensive marketing compliance report for the \"EcoTech Green Leadership Campaign 2025\" that includes formatted analysis and recommendations as per stakeholder requirements. The report is available in two formats - A PDF for executive review and a JSON file for marketing automation system integ",
+        "overall_compliance_status": "requires_review",
+        "risk_assessment": "medium"
+      },
+      "compliance_metadata": {
+        "task_name": "marketing_task",
+        "agent_name": "marketing_report_compiler",
+        "analysis_date": "2025-08-14T16:01:08.722792",
+        "compliance_status": "requires_review",
+        "risk_level": "medium",
+        "analysis_type": "marketing_compliance"
+      }
+    }
+  },
+  "error_note": "Simplified format due to compilation error: slice(None, 5, None)",
+  "context_optimization": {
+    "context_reduction_percentage": 85.2,
+    "summaries_total_size": 1892,
+    "full_results_size": 3192,
+    "estimated_savings": 10876,
+    "agents_executed": 3,
+    "smart_context_enabled": true
+  },
+  "agent_summaries": [
+    {
+      "agent_name": "marketing_compliance_agent",
+      "execution_timestamp": "2025-08-14 15:59:24.917192",
+      "overall_status": "requires_review",
+      "key_findings": [
+        "Compliance analysis completed"
+      ],
+      "critical_issues": [],
+      "confidence_level": 0.8,
+      "compliance_status": "requires_review",
+      "risk_level": "medium",
+      "claims_analyzed": 0,
+      "high_risk_claims": 0,
+      "channels_with_issues": [],
+      "immediate_actions_needed": [],
+      "evidence_gaps": []
+    },
+    {
+      "agent_name": "marketing_compliance_specialist",
+      "execution_timestamp": "2025-08-14 16:00:01.590051",
+      "overall_status": "Regulatory review completed - medium risk",
+      "key_findings": [
+        "Enforcement risk level: medium",
+        "Applicable regulations: 2",
+        "Priority obligations: 0"
+      ],
+      "critical_issues": [],
+      "confidence_level": 0.8,
+      "enforcement_risk": "medium",
+      "applicable_regulations": [
+        "FTC Green Guides",
+        "EU Green Claims Directive"
+      ],
+      "high_priority_obligations": [],
+      "penalty_exposure": "Moderate penalty exposure",
+      "regulatory_deadlines": []
+    },
+    {
+      "agent_name": "marketing_strategy_advisor",
+      "execution_timestamp": "2025-08-14 16:00:43.805084",
+      "overall_status": "Strategy developed - low implementation priority",
+      "key_findings": [
+        "Positioning approach: Authentic sustainability leadership",
+        "Competitive advantage: Compliance-first approach",
+        "Implementation phases: 0"
+      ],
+      "critical_issues": [],
+      "confidence_level": 0.8,
+      "positioning_approach": "Authentic sustainability leadership",
+      "competitive_advantage": "Compliance-first approach",
+      "implementation_priority": "low",
+      "roi_outlook": "Positive ROI expected",
+      "strategic_recommendations": [
+        "Develop authentic sustainability positioning",
+        "Implement compliance-first messaging strategy",
+        "Build competitive advantage through transparency"
+      ]
+    }
+  ],
+  "workflow_metadata": {
+    "workflow_type": "smart_context_management",
+    "total_agents": 3,
+    "context_reduction": "85.2%",
+    "execution_timestamp": "2025-08-14T16:01:08.723850"
+  }
+}

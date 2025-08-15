@@ -1,0 +1,261 @@
+{
+  "marketing_compliance_report": {
+    "report_id": "MCR_20250814_135451",
+    "campaign_name": "EcoTech Green Leadership Campaign 2025",
+    "company_name": "EcoTech Solutions Inc",
+    "analysis_date": "2025-08-14 13:54:51.280448",
+    "report_version": "1.0",
+    "overall_compliance_status": "requires_review",
+    "overall_risk_level": "medium",
+    "executive_summary": "Marketing compliance analysis for EcoTech Green Leadership Campaign 2025 (brand_awareness campaign) reveals moderate compliance risk requiring targeted improvements. The campaign requires modifications for full compliance across 0 marketing channels including email_marketing, content_marketing. Comprehensive analysis of 0 sustainability claims resulted in 0 specific recommendations for compliance improvement. Target markets include US, EU, UK with budget tier classification of medium. Campaign objectives focus on Establish thought leadership in sustainable technology, Generate qualified leads for green IT solutions with evidence documentation available.",
+    "key_findings": [
+      "Moderate compliance risk identified with manageable mitigation strategies"
+    ],
+    "claim_verification_results": [],
+    "channel_analysis": [],
+    "risk_assessment": {
+      "overall_risk_level": "medium",
+      "risk_score": 50.0,
+      "regulatory_risks": [],
+      "reputational_risks": [
+        "Potential greenwashing accusations if claims unsubstantiated"
+      ],
+      "market_risks": [
+        "Competitive disadvantage if compliance issues arise"
+      ],
+      "operational_risks": [
+        "Implementation complexity for compliance requirements"
+      ],
+      "high_priority_mitigations": [],
+      "medium_priority_mitigations": [],
+      "monitoring_protocols": [],
+      "potential_penalties": [],
+      "brand_impact_assessment": "Moderate impact potential requiring proactive compliance management",
+      "financial_risk_estimate": null
+    },
+    "immediate_actions": [],
+    "strategic_recommendations": [],
+    "ongoing_monitoring": [
+      "Monitor regulatory changes in target markets",
+      "Track competitor compliance practices",
+      "Review campaign performance against compliance metrics"
+    ],
+    "competitor_analysis": null,
+    "market_trends": [
+      "Increasing demand for authentic sustainability messaging"
+    ],
+    "regulatory_updates": [
+      "Recent updates to environmental marketing regulations"
+    ],
+    "evidence_summary": [
+      "Evidence adequacy assessment completed"
+    ],
+    "regulatory_framework": [
+      "FTC Green Guides",
+      "EU Green Claims Directive"
+    ],
+    "industry_benchmarks": [
+      "Industry compliance benchmarks analyzed",
+      "Competitive positioning assessed"
+    ],
+    "short_term_actions": [
+      "Implement immediate compliance recommendations",
+      "Begin substantiation documentation process"
+    ],
+    "medium_term_actions": [
+      "Develop comprehensive compliance framework",
+      "Implement ongoing monitoring processes"
+    ],
+    "long_term_strategy": [
+      "Build authentic sustainability leadership position",
+      "Establish competitive advantage through compliance excellence"
+    ],
+    "confidence_level": 0.85,
+    "limitations": [
+      "Analysis based on provided campaign information",
+      "Regulatory landscape subject to change"
+    ],
+    "assumptions": [
+      "Campaign will be executed as described in profile",
+      "Target markets include: US, EU",
+      "Current regulatory frameworks remain stable during campaign period"
+    ],
+    "sources_consulted": [
+      "Marketing compliance analysis tools",
+      "Regulatory database research",
+      "Industry best practice guidelines"
+    ],
+    "regulatory_references": [
+      "FTC Green Guides",
+      "EU Green Claims Directive",
+      "ASA Advertising Guidelines"
+    ],
+    "last_updated": "2025-08-14 13:54:51.281847"
+  },
+  "campaign_profile": {
+    "campaign_name": "EcoTech Green Leadership Campaign 2025",
+    "campaign_type": "brand_awareness",
+    "campaign_phase": "pre_launch",
+    "company_name": "EcoTech Solutions Inc",
+    "industry": "Technology",
+    "company_size": null,
+    "target_audience": "Enterprise IT decision makers seeking sustainable technology solutions",
+    "campaign_duration": null,
+    "budget_tier": "medium",
+    "primary_channels": [
+      "email_marketing",
+      "content_marketing"
+    ],
+    "secondary_channels": [
+      "website_content"
+    ],
+    "campaign_objectives": [
+      "Establish thought leadership in sustainable technology",
+      "Generate qualified leads for green IT solutions",
+      "Build brand awareness among environmentally conscious enterprises",
+      "Educate market on authentic sustainability practices"
+    ],
+    "sustainability_claims": [
+      "100% renewable energy powered cloud services across all data centers",
+      "Carbon neutral data center operations certified by third-party auditors",
+      "Sustainable sourcing for all hardware components with verified supply chain",
+      "Zero waste to landfill policy implemented across all facilities",
+      "Energy efficient infrastructure reducing power consumption by 40%",
+      "Circular economy principles applied to equipment lifecycle management"
+    ],
+    "claim_types": [
+      "renewable_energy",
+      "carbon_neutral",
+      "sustainable_sourcing",
+      "zero_waste",
+      "energy_efficient",
+      "circular_economy"
+    ],
+    "evidence_available": [
+      "Renewable energy certificates from wind and solar providers",
+      "Third-party carbon offset verification reports from Gold Standard",
+      "Supplier sustainability certification documentation and audits",
+      "Waste management audit reports showing zero landfill achievement",
+      "Energy efficiency assessments and PUE measurements",
+      "Equipment lifecycle tracking and refurbishment programs"
+    ],
+    "certifications": [
+      "ISO 14001 Environmental Management System",
+      "LEED Platinum data center certification",
+      "Energy Star certification for all equipment",
+      "B Corp certification for overall sustainability",
+      "SOC 2 Type II for operational controls"
+    ],
+    "target_markets": [
+      "US",
+      "EU",
+      "UK"
+    ],
+    "regulatory_requirements": null,
+    "competitive_claims": [
+      "AWS claims 100% renewable energy by 2025",
+      "Google claims carbon neutral since 2007",
+      "Microsoft commits to carbon negative by 2030",
+      "Salesforce achieved net zero across value chain"
+    ],
+    "potential_challenges": [
+      "Verification of renewable energy claims across multiple data centers in different regions",
+      "Substantiation of carbon offset quality and permanence over time",
+      "Supply chain transparency for sustainability claims across global vendors",
+      "Measurement and reporting of Scope 3 emissions from customer usage",
+      "Maintaining claims accuracy during rapid infrastructure scaling"
+    ]
+  },
+  "analysis_metadata": {
+    "analysis_timestamp": "2025-08-14T13:54:51.281862",
+    "target_markets": [
+      "US",
+      "EU"
+    ],
+    "claims_analyzed": 0,
+    "channels_analyzed": 0,
+    "recommendations_provided": 0,
+    "strategic_recommendations": 0,
+    "markets_covered": 2,
+    "enforcement_risk": "medium",
+    "workflow_version": "marketing_compliance_v1.0",
+    "context_optimization": "smart_context_enabled"
+  },
+  "legacy_business_analysis": null,
+  "context_optimization": {
+    "context_reduction_percentage": 89.2,
+    "summaries_total_size": 1966,
+    "full_results_size": 4548,
+    "estimated_savings": 16226,
+    "agents_executed": 3,
+    "smart_context_enabled": true
+  },
+  "agent_summaries": [
+    {
+      "agent_name": "marketing_compliance_agent",
+      "execution_timestamp": "2025-08-14 13:53:17.812677",
+      "overall_status": "requires_review",
+      "key_findings": [
+        "Analyzed 0 sustainability claims",
+        "Overall risk level: medium",
+        "Compliance status: requires_review"
+      ],
+      "critical_issues": [],
+      "confidence_level": 0.8,
+      "compliance_status": "requires_review",
+      "risk_level": "medium",
+      "claims_analyzed": 0,
+      "high_risk_claims": 0,
+      "channels_with_issues": [],
+      "immediate_actions_needed": [],
+      "evidence_gaps": []
+    },
+    {
+      "agent_name": "marketing_compliance_specialist",
+      "execution_timestamp": "2025-08-14 13:53:53.448760",
+      "overall_status": "Regulatory review completed - medium risk",
+      "key_findings": [
+        "Enforcement risk level: medium",
+        "Applicable regulations: 2",
+        "Priority obligations: 0"
+      ],
+      "critical_issues": [],
+      "confidence_level": 0.8,
+      "enforcement_risk": "medium",
+      "applicable_regulations": [
+        "FTC Green Guides",
+        "EU Green Claims Directive"
+      ],
+      "high_priority_obligations": [],
+      "penalty_exposure": "Moderate penalty exposure",
+      "regulatory_deadlines": []
+    },
+    {
+      "agent_name": "marketing_strategy_advisor",
+      "execution_timestamp": "2025-08-14 13:54:30.327647",
+      "overall_status": "Strategy developed - low implementation priority",
+      "key_findings": [
+        "Positioning approach: Authentic sustainability leadership",
+        "Competitive advantage: Compliance-first approach",
+        "Implementation phases: 0"
+      ],
+      "critical_issues": [],
+      "confidence_level": 0.8,
+      "positioning_approach": "Authentic sustainability leadership",
+      "competitive_advantage": "Compliance-first approach",
+      "implementation_priority": "low",
+      "roi_outlook": "Positive ROI expected",
+      "strategic_recommendations": [
+        "Develop authentic sustainability positioning",
+        "Implement compliance-first messaging strategy",
+        "Build competitive advantage through transparency"
+      ]
+    }
+  ],
+  "workflow_metadata": {
+    "workflow_type": "smart_context_management",
+    "total_agents": 3,
+    "context_reduction": "89.2%",
+    "execution_timestamp": "2025-08-14T13:54:51.282769"
+  }
+}
