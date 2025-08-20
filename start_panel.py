@@ -74,5 +74,19 @@ def create_simple_app():
     
     return layout
 
-# Make it servable
-create_simple_app().servable()
+# Create the app
+app = create_simple_app()
+
+# Make it servable for panel serve command
+app.servable()
+
+# If running directly, start the server
+if __name__ == "__main__":
+    print("🚀 Starting Panel Test Server...")
+    print("🌐 Open your browser to: http://localhost:5007")
+    
+    try:
+        app.show(port=5007, show=True, autoreload=False)
+    except Exception as e:
+        print(f"❌ Error starting server: {e}")
+        print("💡 Try using: panel serve start_panel.py --show --port=5007")
