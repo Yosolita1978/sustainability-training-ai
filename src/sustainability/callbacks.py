@@ -108,8 +108,8 @@ class PanelCallbackHandler:
             summary = "✅ Problematic messaging examples identified with detailed compliance analysis"
         elif "practice" in agent_name.lower():
             summary = "✅ Best practice corrections provided with regulatory guidance"
-        elif "assessment" in agent_name.lower():
-            summary = "✅ Comprehensive training report generated with personalized feedback"
+        elif "playbook" in agent_name.lower():
+            summary = "✅ Comprehensive sustainability messaging playbook generated with practical frameworks"
         else:
             summary = "✅ Analysis completed successfully"
             
@@ -138,9 +138,9 @@ class PanelCallbackHandler:
 1. 🏢 Create realistic business scenario
 2. ⚠️ Identify problematic messaging patterns  
 3. ✅ Develop compliant alternatives
-4. 📝 Generate assessment and feedback
+4. 📚 Generate practical messaging playbook
 
-Please wait while our AI agents work together to create your personalized training content..."""
+Please wait while our AI agents work together to create your personalized sustainability messaging playbook..."""
         
         self.send_message(message, user="System", message_type="session")
     
@@ -150,15 +150,23 @@ Please wait while our AI agents work together to create your personalized traini
 
 📊 **Session Summary:**
 - ✅ All 4 training modules completed
-- 📋 Comprehensive report generated
-- 🎯 Personalized feedback provided
-- 📚 Assessment questions created
+- 📚 Comprehensive messaging playbook generated
+- 🛠️ Practical frameworks and tools provided
+- ✅ Real-world case studies included
+
+**Your Playbook Includes:**
+- 📋 Do's and Don'ts checklist
+- 🚨 Greenwashing patterns to avoid
+- 🔄 Claim-to-proof validation framework
+- ✅ Quick compliance checklist
+- 📖 Case study examples
+- 📄 Regulatory references
 
 **Next Steps:**
-1. Review the detailed training report above
-2. Use the download buttons to save your results
-3. Share insights with your team
-4. Implement the compliance recommendations
+1. Review the detailed playbook above
+2. Use the download buttons to save your playbook
+3. Share with your marketing team
+4. Implement the frameworks and checklists
 
 Thank you for using our AI-powered sustainability training system! 🌱"""
         
@@ -188,10 +196,10 @@ def print_task_output(task_output: TaskOutput) -> TaskOutput:
                     # Best practices task
                     correction_count = len(data.get('corrected_messages', []))
                     output_summary = f"Provided {correction_count} corrected messages with compliance guidance"
-                elif 'assessment_questions' in data:
-                    # Assessment task
-                    question_count = len(data.get('assessment_questions', []))
-                    output_summary = f"Generated comprehensive report with {question_count} assessment questions"
+                elif 'playbook_title' in data:
+                    # Playbook task
+                    case_studies = len(data.get('case_study_snapshots', []))
+                    output_summary = f"Generated comprehensive messaging playbook with frameworks, checklists, and {case_studies} case studies"
                 else:
                     output_summary = "Task completed with structured output"
                     

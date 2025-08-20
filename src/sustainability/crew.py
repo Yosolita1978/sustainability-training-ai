@@ -63,37 +63,62 @@ class BestPracticeGuidance(BaseModel):
     industry_specific_advice: str = Field(description="Advice specific to the industry in the scenario")
     research_sources: List[str] = Field(description="Sources for best practices and examples")
 
-class AssessmentQuestion(BaseModel):
-    """A training assessment question"""
-    id: str = Field(description="Question identifier")
-    type: str = Field(description="Question type (multiple_choice, scenario_analysis, identification)")
-    question: str = Field(description="The assessment question")
-    options: List[str] = Field(description="Answer options (for multiple choice questions)")
-    correct_answer: str = Field(description="The correct answer")
-    explanation: str = Field(description="Detailed explanation of the correct answer")
-    difficulty_level: str = Field(description="beginner, intermediate, or advanced")
-    learning_objective: str = Field(description="What this question tests")
+class CaseStudySnapshot(BaseModel):
+    """A case study example in the playbook"""
+    title: str = Field(description="Case study title")
+    company_name: str = Field(description="Company name (can be anonymized)")
+    message_type: str = Field(description="good_example or bad_example")
+    original_message: str = Field(description="The original sustainability message")
+    analysis: str = Field(description="Analysis of why it works or doesn't work")
+    key_lesson: str = Field(description="Key takeaway from this example")
+    regulatory_context: str = Field(description="Relevant regulatory considerations")
 
-class PersonalizedFeedback(BaseModel):
-    """Personalized feedback for the learner"""
-    role_specific_tips: List[str] = Field(description="Tips specific to Marketing Director role")
-    team_training_recommendations: List[str] = Field(description="Recommendations for training the team")
-    implementation_strategies: List[str] = Field(description="Strategies for implementing learnings")
-    next_steps: List[str] = Field(description="Recommended next steps for continued learning")
-    additional_resources: List[str] = Field(description="Additional resources for further learning")
+class ClaimToProofFramework(BaseModel):
+    """Framework for transforming claims into credible messages"""
+    framework_name: str = Field(description="Name of the framework")
+    steps: List[str] = Field(description="Step-by-step process for claim validation")
+    validation_questions: List[str] = Field(description="Questions to ask when validating claims")
+    proof_requirements: List[str] = Field(description="Types of proof needed for different claims")
+    common_pitfalls: List[str] = Field(description="Common mistakes to avoid")
+    examples: List[str] = Field(description="Example applications of the framework")
 
-class ComprehensiveTrainingReport(BaseModel):
-    """Complete sustainability training session report"""
-    session_id: str = Field(description="Training session identifier")
-    timestamp: str = Field(description="Session timestamp")
-    learner_profile: str = Field(description="Learner profile summary")
-    scenario: SustainabilityScenario = Field(description="Business scenario used in training")
-    problematic_analysis: ProblematicMessageAnalysis = Field(description="Analysis of problematic messages")
-    best_practices: BestPracticeGuidance = Field(description="Best practice guidance and corrections")
-    assessment_questions: List[AssessmentQuestion] = Field(description="Assessment questions for knowledge testing")
-    personalized_feedback: PersonalizedFeedback = Field(description="Personalized feedback and recommendations")
-    key_takeaways: List[str] = Field(description="Key takeaways from the training session")
-    compliance_checklist: List[str] = Field(description="Checklist for ensuring message compliance")
+class ComplianceChecklist(BaseModel):
+    """Quick compliance validation checklist"""
+    checklist_name: str = Field(description="Name of the checklist")
+    categories: List[str] = Field(description="Main categories to check")
+    questions: List[str] = Field(description="Specific validation questions")
+    red_flags: List[str] = Field(description="Warning signs to watch for")
+    approval_criteria: List[str] = Field(description="Criteria for message approval")
+
+class SustainabilityMessagingPlaybook(BaseModel):
+    """Complete sustainability messaging playbook"""
+    playbook_title: str = Field(description="Title of the playbook")
+    creation_date: str = Field(description="Date the playbook was created")
+    target_audience: str = Field(description="Intended audience for this playbook")
+    
+    # Core Content Sections
+    executive_summary: str = Field(description="Executive summary of key points")
+    dos_and_donts: List[str] = Field(description="Clear do's and don'ts for sustainability messaging")
+    greenwashing_patterns: List[str] = Field(description="Common greenwashing patterns to avoid")
+    
+    # Frameworks and Tools
+    claim_to_proof_framework: ClaimToProofFramework = Field(description="Framework for validating claims")
+    compliance_checklist: ComplianceChecklist = Field(description="Quick validation checklist")
+    
+    # Case Studies and Examples
+    case_study_snapshots: List[CaseStudySnapshot] = Field(description="Real-world examples")
+    
+    # Reference Materials
+    regulatory_references: List[str] = Field(description="Key regulatory requirements and sources")
+    additional_resources: List[str] = Field(description="Additional learning resources")
+    
+    # Implementation Guide
+    quick_start_guide: List[str] = Field(description="Steps to start implementing the playbook")
+    team_training_tips: List[str] = Field(description="Tips for training marketing teams")
+    
+    # Appendices
+    glossary_terms: List[str] = Field(description="Key terms and definitions")
+    contact_resources: List[str] = Field(description="Who to contact for help")
 
 @CrewBase
 class Sustainability():
@@ -149,9 +174,9 @@ class Sustainability():
         )
     
     @agent
-    def assessment_agent(self) -> Agent:
+    def playbook_creator(self) -> Agent:
         return Agent(
-            config=self.agents_config['assessment_agent'],
+            config=self.agents_config['playbook_creator'],
             tools=[self.search_tool],
             verbose=True
         )
@@ -184,12 +209,12 @@ class Sustainability():
         )
     
     @task
-    def assessment_and_feedback_task(self) -> Task:
+    def playbook_task(self) -> Task:
         return Task(
-            config=self.tasks_config['assessment_and_feedback_task'],
-            agent=self.assessment_agent(),
-            output_pydantic=ComprehensiveTrainingReport,
-            output_file='outputs/sustainability_training_session.json',
+            config=self.tasks_config['playbook_task'],
+            agent=self.playbook_creator(),
+            output_pydantic=SustainabilityMessagingPlaybook,
+            output_file='outputs/sustainability_messaging_playbook.json',
             callback=print_task_output
         )
     
